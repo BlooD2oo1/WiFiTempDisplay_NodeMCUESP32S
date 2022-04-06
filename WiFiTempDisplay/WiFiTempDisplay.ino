@@ -14,8 +14,6 @@
 
 #undef abs
 
-#define WDT_TIMEOUT_SEC 3
-
 TaskHandle_t    g_hTaskWiFi = 0;
 
 #define ONE_WIRE_BUS 13
@@ -25,7 +23,7 @@ const uint8_t g_piSensorDeviceAddress[2][8] = { { 0x28, 0x44, 0xF3, 0xD0, 0x5C, 
                                                 { 0x28, 0x12, 0x56, 0xE8, 0x5C, 0x21, 0x01, 0xEC } };
 int16_t       g_iSensorTemperature[2] = {DEVICE_DISCONNECTED_RAW};
 
-U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R2 );
+U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2( U8G2_R2 );
 
 //RTC_NOINIT_ATTR int g_iCounter = 0;
 
@@ -39,8 +37,6 @@ void ClearStaticVariables()
 
 void setup()
 {
-  //esp_task_wdt_init(WDT_TIMEOUT_SEC, true); //enable panic so ESP32 restarts
-  //esp_task_wdt_add(NULL); //add current thread to WDT watch
 
   Serial.begin(9600);
   Serial.println( "\n\nSetup begin" );
@@ -60,6 +56,7 @@ void setup()
   g_Sensors.requestTemperatures();
 
   u8g2.begin();
+  u8g2.setContrast( 0 );
 
   Serial.print("MainTask running on core ");
   Serial.println(xPortGetCoreID());
@@ -102,6 +99,9 @@ void Render()
 
   u8g2.clearBuffer();
   
+  u8g2.setContrast( 0 );
+  //u8g2.sendF("c", 0xa7 );
+
   static char pTemp[40];
   //u8g2.setFont( u8g2_font_blipfest_07_tr );
   //u8g2.setFont( u8g2_font_lastapprenticebold_tr );
@@ -141,7 +141,7 @@ void UpdateDailyReset()
 {
   if ( millis() >= HOURMINSEC_2_MS( 0UL, 0UL, 30UL ) )
   {
-    Serial.println( "Daily reset." );
+    Serial.println( "Daily reset.\n" );
     ESP.restart();
   }
 }
