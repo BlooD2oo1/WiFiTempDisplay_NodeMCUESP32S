@@ -31,7 +31,7 @@ private:
 
   //RTC_NOINIT_ATTR int m_iCounter = 0;
 
-  const byte        m_iTempDataCount = 65;
+  const byte        m_iTempDataCount = 63;
 };
 
 #endif

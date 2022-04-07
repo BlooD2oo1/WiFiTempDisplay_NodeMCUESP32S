@@ -18,6 +18,7 @@ private:
   void    FindSSID();
   void    ConnectToWiFi();
 
+  void    UpdateDisplayText();
   void    UpdateTime();
 
 private:
@@ -36,6 +37,8 @@ private:
   int8_t              g_iSSIDInd;
 
   unsigned long       g_iEpochTimeLastUpdateTimeStamp;
+
+  unsigned long       g_iDisplayTextLastUpdateTimeStamp;
 };
 
 #endif

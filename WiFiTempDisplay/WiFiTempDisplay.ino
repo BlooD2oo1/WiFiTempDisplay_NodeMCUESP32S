@@ -15,10 +15,16 @@ void setup()
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, LOW);
 
+  g_pDisplayText_sem = xSemaphoreCreateBinary();
+  xSemaphoreGive( g_pDisplayText_sem );
+  g_iRealTimeOffsetSec_sem = xSemaphoreCreateBinary();
+  xSemaphoreGive( g_iRealTimeOffsetSec_sem );
+  
   esp_reset_reason_t iResetReason = esp_reset_reason();
   if ( iResetReason != ESP_RST_SW )
   {
     Serial.println( "Clear" );
+    g_iRealTimeOffsetSec = 0;
     g_cMainTask.Clear();
   }
 
@@ -55,7 +61,7 @@ void WiFiTask( void * parameter )
 
 void UpdateDailyReset()
 {
-  if ( millis() >= HOURMINSEC_2_MS( 24UL, 0UL, 0UL ) )
+  if ( millis() >= HOURMINSEC_2_MS( 0UL, 0UL, 20UL ) )
   {
     Serial.println( "Daily reset.\n" );
     ESP.restart();

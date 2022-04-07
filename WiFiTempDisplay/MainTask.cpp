@@ -44,7 +44,7 @@ void CMainTask::Loop()
 
 void CMainTask::Render()
 {
-  const uint iXOffset[2] = {0,63};
+  const uint iXOffset[2] = {0,65};
 
   m_u8g2.clearBuffer();
   
@@ -58,7 +58,18 @@ void CMainTask::Render()
   //u8g2.setFont( u8g2_font_logisoso16_tf );
 
   m_u8g2.setFont( u8g2_font_blipfest_07_tr );
-  m_u8g2.drawStr( 0, 63, "NodeMCU Arduino Temp Sensor v0.1");
+  
+  static char pText[80] = {0};
+
+  GetDisplayText( pText );
+  m_u8g2.drawStr( 0, 63, pText );
+
+  unsigned long iRealTimeOffsetSec;
+  GetRealTimeOffsetSec( iRealTimeOffsetSec );
+  iRealTimeOffsetSec = ( iRealTimeOffsetSec + millis()/1000UL ) % HOURMINSEC_2_SEC( 24UL, 0UL, 0UL );
+  PrintSec( iRealTimeOffsetSec, pText );
+  u8g2_uint_t  iTextWidth = m_u8g2.getStrWidth( pText );
+  m_u8g2.drawStr( 128 - iTextWidth, 63, pText );
 
   for ( byte iSensorInd = 0; iSensorInd < 2; iSensorInd++ )
   {

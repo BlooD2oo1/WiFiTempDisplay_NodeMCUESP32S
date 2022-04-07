@@ -10,7 +10,8 @@ CWiFiTask::CWiFiTask()
 , timeClient(ntpUDP)
 , g_iThingSpeakLastUpdateTimeStamp( 0 )
 , g_iSSIDInd( -1 )
-, g_iEpochTimeLastUpdateTimeStamp( 0 )
+, g_iEpochTimeLastUpdateTimeStamp( HOURMINSEC_2_MS( 24UL, 0UL, 0UL ) )
+, g_iDisplayTextLastUpdateTimeStamp( HOURMINSEC_2_MS( 24UL, 0UL, 0UL ) )
 {
 
 }
@@ -36,6 +37,8 @@ void CWiFiTask::Setup()
 
 void CWiFiTask::Loop()
 {
+  UpdateDisplayText();
+
   if ( WiFi.status() != WL_CONNECTED )
   {
     digitalWrite(LED_BUILTIN, LOW);
@@ -46,25 +49,50 @@ void CWiFiTask::Loop()
   {
     UpdateTime();
 
-
     digitalWrite(LED_BUILTIN, HIGH);
+  }
+}
+
+void CWiFiTask::UpdateDisplayText()
+{
+  if ( millis() - g_iDisplayTextLastUpdateTimeStamp > HOURMINSEC_2_MS( 0UL, 0UL, 1UL ) )
+  {
+    if( WiFi.status() == WL_CONNECTED )
+    {
+      static char p[] = "Connected to                                     ";
+      strcpy( &(p[14]), g_sWifiID[g_iSSIDInd] );
+      SetDisplayText( p );
+    }
+    else
+    {
+      static char p[] = "No Internet";
+      SetDisplayText( p );
+    }
+
+    g_iDisplayTextLastUpdateTimeStamp = millis();
   }
 }
 
 void CWiFiTask::UpdateTime()
 {
-    if ( millis() - g_iEpochTimeLastUpdateTimeStamp > HOURMINSEC_2_MS( 0UL, 1UL, 0UL ) )
-    {
-      timeClient.update();
-      unsigned long unix_epoch = timeClient.getEpochTime();    // Get Unix epoch time from the NTP server
-      PrintSec( unix_epoch );
-      g_iEpochTimeLastUpdateTimeStamp = millis();
-    }
+  if ( millis() - g_iEpochTimeLastUpdateTimeStamp > HOURMINSEC_2_MS( 0UL, 10UL, 0UL ) )
+  {
+    timeClient.update();
+    unsigned long unix_epoch = timeClient.getEpochTime();    // Get Unix epoch time from the NTP server
+    PrintSec( unix_epoch );
+    unix_epoch = unix_epoch % HOURMINSEC_2_SEC( 24UL, 0UL, 0UL );
+    unix_epoch = unix_epoch + HOURMINSEC_2_SEC( 24UL, 0UL, 0UL ) - (millis()/1000UL);
+    SetRealTimeOffsetSec( unix_epoch );
+
+    g_iEpochTimeLastUpdateTimeStamp = millis();
+  }
 }
 
 void CWiFiTask::FindSSID()
 {
-  Serial.println("Searching wifi..." );
+  Serial.println("Searching WiFi..." );
+
+  SetDisplayText( "Searching WiFi..." );
   
   g_iSSIDInd = -1;
 
@@ -103,6 +131,7 @@ void CWiFiTask::ConnectToWiFi()
   if ( g_iSSIDInd == -1 )
   {
     Serial.println( "WiFi SSID not found." );
+    SetDisplayText( "WiFi SSID not found." );
     return;
   }
 
@@ -111,6 +140,10 @@ void CWiFiTask::ConnectToWiFi()
   {
     Serial.print("Attempting to connect to SSID: ");
     Serial.println(g_sWifiID[g_iSSIDInd]);
+
+    static char p[] = "Connecting to                                     ";
+    strcpy( &(p[15]), g_sWifiID[g_iSSIDInd] );
+    SetDisplayText( p );
     
     WiFi.begin(g_sWifiID[g_iSSIDInd], g_sWifiPass[g_iSSIDInd]); // Connect to WPA/WPA2 network. Change this line if using open or WEP network      
 
