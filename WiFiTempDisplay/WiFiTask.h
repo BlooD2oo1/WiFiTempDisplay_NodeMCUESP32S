@@ -4,6 +4,7 @@
 #include <WiFi.h>
 #include <NTPClient.h>
 #include <WiFiUdp.h>
+#include "Globals.h"
 
 class CWiFiTask
 {
@@ -20,6 +21,7 @@ private:
 
   void    UpdateDisplayText();
   void    UpdateTime();
+  void    UpdateIOT();
 
 private:
 
@@ -39,6 +41,8 @@ private:
   unsigned long       g_iEpochTimeLastUpdateTimeStamp;
 
   unsigned long       g_iDisplayTextLastUpdateTimeStamp;
+
+  unsigned long       g_iIOTLastUpdateTimeStamp;
 };
 
 #endif

@@ -1,5 +1,9 @@
 #include "MainTask.h"
-#include "Globals.h"
+
+  int16_t    CMainTask::m_pTempMin[2][m_iTempDataCount];
+  int16_t    CMainTask::m_pTempMax[2][m_iTempDataCount];
+  byte       CMainTask::m_iTempDataPointer;
+  int16_t   CMainTask::m_iTempDataCounter;
 
 CMainTask::CMainTask()
 : m_OneWire(m_iOneWireBus)
@@ -16,7 +20,16 @@ CMainTask::~CMainTask()
 
 void CMainTask::Clear()
 {
-
+  m_iTempDataPointer = 0;
+  m_iTempDataCounter = 0;
+  for ( byte iSensorInd = 0; iSensorInd < 2; iSensorInd++ )
+  {
+    for ( byte iDataInd = 0; iDataInd < m_iTempDataCount; iDataInd++ )
+    {
+      m_pTempMin[iSensorInd][iDataInd] = 20;
+      m_pTempMax[iSensorInd][iDataInd] = 25;
+    }
+  }
 }
 
 void CMainTask::Setup()
@@ -65,11 +78,13 @@ void CMainTask::Render()
   m_u8g2.drawStr( 0, 63, pText );
 
   unsigned long iRealTimeOffsetSec;
-  GetRealTimeOffsetSec( iRealTimeOffsetSec );
-  iRealTimeOffsetSec = ( iRealTimeOffsetSec + millis()/1000UL ) % HOURMINSEC_2_SEC( 24UL, 0UL, 0UL );
-  PrintSec( iRealTimeOffsetSec, pText );
-  u8g2_uint_t  iTextWidth = m_u8g2.getStrWidth( pText );
-  m_u8g2.drawStr( 128 - iTextWidth, 63, pText );
+  if ( GetRealTimeOffsetSec( iRealTimeOffsetSec ) )
+  {
+    iRealTimeOffsetSec = ( iRealTimeOffsetSec + millis()/1000UL ) % HOURMINSEC_2_SEC( 24UL, 0UL, 0UL );
+    PrintSec( iRealTimeOffsetSec, pText );
+    u8g2_uint_t iTextWidth = m_u8g2.getStrWidth( pText );
+    m_u8g2.drawStr( 128 - iTextWidth, 63, pText );
+  }
 
   for ( byte iSensorInd = 0; iSensorInd < 2; iSensorInd++ )
   {
@@ -94,6 +109,36 @@ void CMainTask::Render()
     //u8g2.drawFrame( iXOffset[iSensorInd], 0, m_iTempDataCount, 33 );
   }
 
+  int16_t iMinMin = 32000;
+  int16_t iMaxMax = -32000;
+  for ( byte iSensorInd = 0; iSensorInd < 2; iSensorInd++ )
+  {
+    for ( byte iDataInd = 0; iDataInd < m_iTempDataCount; iDataInd++ )
+    {
+      iMinMin = min( iMinMin, m_pTempMin[iSensorInd][iDataInd] );
+      iMaxMax = max( iMaxMax, m_pTempMax[iSensorInd][iDataInd] );
+    }
+  }
+
+  if ( iMaxMax - iMinMin < 16*32 )
+  {
+    int16_t iAvg = ( iMaxMax + iMinMin ) / 2;
+    iMinMin = iAvg - 8*32;
+    iMaxMax = iAvg + 8*32;
+  }
+
+  for ( byte iSensorInd = 0; iSensorInd < 2; iSensorInd++ )
+  {
+    for ( int16_t iDataInd = 0; iDataInd < m_iTempDataCount; iDataInd++ )
+    {
+      int16_t iInd = ( iDataInd + m_iTempDataPointer ) % m_iTempDataCount;
+      int16_t iMin = 32 - ( ( m_pTempMin[iSensorInd][iInd] - iMinMin ) * 32 ) / ( iMaxMax - iMinMin );
+      int16_t iMax = 32 - ( ( m_pTempMax[iSensorInd][iInd] - iMinMin ) * 32 ) / ( iMaxMax - iMinMin );
+
+      m_u8g2.drawVLine( iXOffset[iSensorInd]+iDataInd, iMax, iMin - iMax + 1 );
+    }
+  }
+
   m_u8g2.sendBuffer();
 }
 
@@ -105,12 +150,37 @@ void CMainTask::UpdateSensors()
     return;
   }
 
+  unsigned long pTemp[2];
   for ( byte iSensorInd = 0; iSensorInd < 2; iSensorInd++ )
   {
     m_iSensorTemperature[iSensorInd] = m_Sensors.getTemp(m_piSensorDeviceAddress[iSensorInd]);
+    pTemp[iSensorInd] = m_iSensorTemperature[iSensorInd];
   }
   m_Sensors.requestTemperatures();
   m_iSensorLastUpdateTimeMs = millis();
+  
+  AddTemp( pTemp );
+
+  if ( m_iTempDataCounter > 800 )
+  {
+    m_iTempDataCounter = 0;
+    m_iTempDataPointer++;
+    m_iTempDataPointer %= m_iTempDataCount;
+    for ( byte iSensorInd = 0; iSensorInd < 2; iSensorInd++ )
+    {
+      m_pTempMin[iSensorInd][m_iTempDataPointer] = m_iSensorTemperature[iSensorInd];
+      m_pTempMax[iSensorInd][m_iTempDataPointer] = m_iSensorTemperature[iSensorInd];
+    }
+  }
+  else
+  {
+    for ( byte iSensorInd = 0; iSensorInd < 2; iSensorInd++ )
+    {
+        m_pTempMin[iSensorInd][m_iTempDataPointer] = min( m_pTempMin[iSensorInd][m_iTempDataPointer], m_iSensorTemperature[iSensorInd] );
+        m_pTempMax[iSensorInd][m_iTempDataPointer] = max( m_pTempMax[iSensorInd][m_iTempDataPointer], m_iSensorTemperature[iSensorInd] );
+    }
+  }
+  m_iTempDataCounter++;
 
   for ( byte iSensorInd = 0; iSensorInd < 2; iSensorInd++ )
   {

@@ -8,15 +8,23 @@
 #define HOURMINSEC_2_SEC( h, m, s ) ((h*60UL+m)*60UL+s)
 #define HOURMINSEC_2_MS( h, m, s ) (((h*60UL+m)*60UL+s)*1000UL)
 
+void InitSemaphores();
 extern SemaphoreHandle_t g_pDisplayText_sem;
 extern char g_pDisplayText[80];
-void SetDisplayText( char* pText );
+void SetDisplayText( const char* pText );
 void GetDisplayText( char* pText );
 
 extern SemaphoreHandle_t g_iRealTimeOffsetSec_sem;
-NOINIT extern unsigned long g_iRealTimeOffsetSec;
+extern unsigned long g_iRealTimeOffsetSec;
+extern bool g_bRealTimeOffsetValid;
 void SetRealTimeOffsetSec( unsigned long iRealTimeOffsetSec );
-void GetRealTimeOffsetSec( unsigned long& iRealTimeOffsetSec );
+bool GetRealTimeOffsetSec( unsigned long& iRealTimeOffsetSec );
+
+extern SemaphoreHandle_t g_Temp_sem;
+extern unsigned long g_pTempSum[2];
+extern unsigned long g_iTempCount;
+void AddTemp( unsigned long* pTemp );
+void GetTempAndReset( unsigned long* pTempSum, unsigned long& iTempCount );
 
 #undef abs
 

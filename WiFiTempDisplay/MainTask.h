@@ -4,6 +4,7 @@
 #include <OneWire.h> 
 #include <DallasTemperature.h>
 #include <U8g2lib.h>
+#include "Globals.h"
 
 class CMainTask
 {
@@ -31,7 +32,12 @@ private:
 
   //RTC_NOINIT_ATTR int m_iCounter = 0;
 
-  const byte        m_iTempDataCount = 63;
+  static const byte m_iTempDataCount = 63;
+  NOINIT static int16_t    m_pTempMin[2][m_iTempDataCount];
+  NOINIT static int16_t    m_pTempMax[2][m_iTempDataCount];
+  NOINIT static byte       m_iTempDataPointer;
+  NOINIT static int16_t    m_iTempDataCounter;
+
 };
 
 #endif

@@ -1,5 +1,4 @@
 #include "WiFiTask.h"
-#include "Globals.h"
 
 #include <SPI.h>
 #include <Wire.h>
@@ -12,6 +11,7 @@ CWiFiTask::CWiFiTask()
 , g_iSSIDInd( -1 )
 , g_iEpochTimeLastUpdateTimeStamp( HOURMINSEC_2_MS( 24UL, 0UL, 0UL ) )
 , g_iDisplayTextLastUpdateTimeStamp( HOURMINSEC_2_MS( 24UL, 0UL, 0UL ) )
+, g_iIOTLastUpdateTimeStamp( 0 )
 {
 
 }
@@ -49,6 +49,8 @@ void CWiFiTask::Loop()
   {
     UpdateTime();
 
+    UpdateIOT();
+
     digitalWrite(LED_BUILTIN, HIGH);
   }
 }
@@ -75,22 +77,66 @@ void CWiFiTask::UpdateDisplayText()
 
 void CWiFiTask::UpdateTime()
 {
-  if ( millis() - g_iEpochTimeLastUpdateTimeStamp > HOURMINSEC_2_MS( 0UL, 10UL, 0UL ) )
+  if ( millis() - g_iEpochTimeLastUpdateTimeStamp > HOURMINSEC_2_MS( 0UL, 4UL, 0UL ) )
   {
-    timeClient.update();
-    unsigned long unix_epoch = timeClient.getEpochTime();    // Get Unix epoch time from the NTP server
-    PrintSec( unix_epoch );
-    unix_epoch = unix_epoch % HOURMINSEC_2_SEC( 24UL, 0UL, 0UL );
-    unix_epoch = unix_epoch + HOURMINSEC_2_SEC( 24UL, 0UL, 0UL ) - (millis()/1000UL);
-    SetRealTimeOffsetSec( unix_epoch );
+    if ( timeClient.update() )
+    {
+      unsigned long unix_epoch = timeClient.getEpochTime();    // Get Unix epoch time from the NTP server
+      PrintSec( unix_epoch );
+      unix_epoch = unix_epoch % HOURMINSEC_2_SEC( 24UL, 0UL, 0UL );
+      unix_epoch = unix_epoch + HOURMINSEC_2_SEC( 24UL, 0UL, 0UL ) - (millis()/1000UL);
+      SetRealTimeOffsetSec( unix_epoch );
+    }
 
     g_iEpochTimeLastUpdateTimeStamp = millis();
   }
 }
 
+void CWiFiTask::UpdateIOT()
+{
+  if ( millis() - g_iIOTLastUpdateTimeStamp > HOURMINSEC_2_MS( 0UL, 5UL, 0UL ) )
+  {
+    Serial.println( "Updating ThingSpeak" );
+    SetDisplayText( "Updating IOT" );
+
+    unsigned long pTempSum[2];
+    unsigned long iTempCount;
+    GetTempAndReset( pTempSum, iTempCount );
+
+    float fA = ( (float)pTempSum[0]/(float)iTempCount ) * 0.0078125f;
+    float fB = ( (float)pTempSum[1]/(float)iTempCount ) * 0.0078125f;
+  
+    Serial.print("AvgTempA: ");
+    Serial.print( fA );
+    Serial.print(" C");
+    Serial.print("\t\tAvgTempB: ");
+    Serial.print( fB );
+    Serial.println(" C");
+    
+    ThingSpeak.setField( 1, fA );
+    ThingSpeak.setField( 2, fB );
+    ThingSpeak.setField( 3, fB-fA );
+    ThingSpeak.setField( 4, (float)( millis()/1000UL )/3600.0f );
+
+
+    int iRet = ThingSpeak.writeFields( g_iThingSpeakChannelNumber, g_sThingSpeakWriteAPIKey );
+
+    if(iRet == 200)
+    {
+      Serial.println("ThingSpeak update successful.");
+    }
+    else
+    {
+      Serial.print("Problem updating ThingSpeak channels. HTTP error code: ");
+      Serial.println(iRet);
+    }
+    g_iIOTLastUpdateTimeStamp = millis();
+  }
+}
+
 void CWiFiTask::FindSSID()
 {
-  Serial.println("Searching WiFi..." );
+  Serial.println( "Searching WiFi..." );
 
   SetDisplayText( "Searching WiFi..." );
   
