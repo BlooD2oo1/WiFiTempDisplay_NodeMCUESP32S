@@ -18,6 +18,8 @@ private:
   void    FindSSID();
   void    ConnectToWiFi();
 
+  void    UpdateTime();
+
 private:
 
   static const byte   g_sWifiAccCount = 3;
@@ -32,6 +34,8 @@ private:
 
   unsigned long       g_iThingSpeakLastUpdateTimeStamp;
   int8_t              g_iSSIDInd;
+
+  unsigned long       g_iEpochTimeLastUpdateTimeStamp;
 };
 
 #endif

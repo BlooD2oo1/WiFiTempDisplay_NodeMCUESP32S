@@ -13,7 +13,7 @@ void setup()
   Serial.println( "\n\nSetup begin" );
 
   pinMode(LED_BUILTIN, OUTPUT);
-  digitalWrite(LED_BUILTIN, HIGH);
+  digitalWrite(LED_BUILTIN, LOW);
 
   esp_reset_reason_t iResetReason = esp_reset_reason();
   if ( iResetReason != ESP_RST_SW )

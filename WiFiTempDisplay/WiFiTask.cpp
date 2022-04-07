@@ -10,6 +10,7 @@ CWiFiTask::CWiFiTask()
 , timeClient(ntpUDP)
 , g_iThingSpeakLastUpdateTimeStamp( 0 )
 , g_iSSIDInd( -1 )
+, g_iEpochTimeLastUpdateTimeStamp( 0 )
 {
 
 }
@@ -28,7 +29,7 @@ void CWiFiTask::Setup()
 
   ThingSpeak.begin(client);  //Initialize ThingSpeak
 
-  //timeClient.setTimeOffset(3600);
+  timeClient.setTimeOffset(7200);
 
   FindSSID();
 }
@@ -43,17 +44,23 @@ void CWiFiTask::Loop()
 
   if ( WiFi.status() == WL_CONNECTED )
   {
-    timeClient.update();
-    unsigned long unix_epoch = timeClient.getEpochTime();    // Get Unix epoch time from the NTP server
-    PrintSec( unix_epoch );
-    
+    UpdateTime();
+
+
     digitalWrite(LED_BUILTIN, HIGH);
-    delay(1000);
-    digitalWrite(LED_BUILTIN, LOW);
-    delay(50);
   }
 }
 
+void CWiFiTask::UpdateTime()
+{
+    if ( millis() - g_iEpochTimeLastUpdateTimeStamp > HOURMINSEC_2_MS( 0UL, 1UL, 0UL ) )
+    {
+      timeClient.update();
+      unsigned long unix_epoch = timeClient.getEpochTime();    // Get Unix epoch time from the NTP server
+      PrintSec( unix_epoch );
+      g_iEpochTimeLastUpdateTimeStamp = millis();
+    }
+}
 
 void CWiFiTask::FindSSID()
 {
