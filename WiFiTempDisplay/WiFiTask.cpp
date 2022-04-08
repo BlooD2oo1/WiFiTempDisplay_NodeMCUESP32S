@@ -7,11 +7,11 @@
 CWiFiTask::CWiFiTask()
 : client()
 , timeClient(ntpUDP)
-, g_iThingSpeakLastUpdateTimeStamp( 0 )
-, g_iSSIDInd( -1 )
-, g_iEpochTimeLastUpdateTimeStamp( HOURMINSEC_2_MS( 24UL, 0UL, 0UL ) )
-, g_iDisplayTextLastUpdateTimeStamp( HOURMINSEC_2_MS( 24UL, 0UL, 0UL ) )
-, g_iIOTLastUpdateTimeStamp( 0 )
+, m_iThingSpeakLastUpdateTimeStamp( 0 )
+, m_iSSIDInd( -1 )
+, m_iEpochTimeLastUpdateTimeStamp( HOURMINSEC_2_MS( 24UL, 0UL, 0UL ) )
+, m_iDisplayTextLastUpdateTimeStamp( HOURMINSEC_2_MS( 24UL, 0UL, 0UL ) )
+, m_iIOTLastUpdateTimeStamp( 0 )
 {
 
 }
@@ -57,12 +57,12 @@ void CWiFiTask::Loop()
 
 void CWiFiTask::UpdateDisplayText()
 {
-  if ( millis() - g_iDisplayTextLastUpdateTimeStamp > HOURMINSEC_2_MS( 0UL, 0UL, 1UL ) )
+  if ( millis() - m_iDisplayTextLastUpdateTimeStamp > HOURMINSEC_2_MS( 0UL, 0UL, 1UL ) )
   {
     if( WiFi.status() == WL_CONNECTED )
     {
       static char p[] = "Connected to                                     ";
-      strcpy( &(p[14]), g_sWifiID[g_iSSIDInd] );
+      strcpy( &(p[14]), m_sWifiID[m_iSSIDInd] );
       SetDisplayText( p );
     }
     else
@@ -71,13 +71,13 @@ void CWiFiTask::UpdateDisplayText()
       SetDisplayText( p );
     }
 
-    g_iDisplayTextLastUpdateTimeStamp = millis();
+    m_iDisplayTextLastUpdateTimeStamp = millis();
   }
 }
 
 void CWiFiTask::UpdateTime()
 {
-  if ( millis() - g_iEpochTimeLastUpdateTimeStamp > HOURMINSEC_2_MS( 0UL, 4UL, 0UL ) )
+  if ( millis() - m_iEpochTimeLastUpdateTimeStamp > HOURMINSEC_2_MS( 0UL, 4UL, 0UL ) )
   {
     if ( timeClient.update() )
     {
@@ -88,18 +88,18 @@ void CWiFiTask::UpdateTime()
       SetRealTimeOffsetSec( unix_epoch );
     }
 
-    g_iEpochTimeLastUpdateTimeStamp = millis();
+    m_iEpochTimeLastUpdateTimeStamp = millis();
   }
 }
 
 void CWiFiTask::UpdateIOT()
 {
-  if ( millis() - g_iIOTLastUpdateTimeStamp > HOURMINSEC_2_MS( 0UL, 5UL, 0UL ) )
+  if ( millis() - m_iIOTLastUpdateTimeStamp > HOURMINSEC_2_MS( 0UL, 5UL, 0UL ) )
   {
     Serial.println( "Updating ThingSpeak" );
     SetDisplayText( "Updating IOT" );
 
-    unsigned long pTempSum[2];
+    unsigned long pTempSum[SENSORCOUNT];
     unsigned long iTempCount;
     GetTempAndReset( pTempSum, iTempCount );
 
@@ -119,7 +119,7 @@ void CWiFiTask::UpdateIOT()
     ThingSpeak.setField( 4, (float)( millis()/1000UL )/3600.0f );
 
 
-    int iRet = ThingSpeak.writeFields( g_iThingSpeakChannelNumber, g_sThingSpeakWriteAPIKey );
+    int iRet = ThingSpeak.writeFields( m_iThingSpeakChannelNumber, m_sThingSpeakWriteAPIKey );
 
     if(iRet == 200)
     {
@@ -130,7 +130,7 @@ void CWiFiTask::UpdateIOT()
       Serial.print("Problem updating ThingSpeak channels. HTTP error code: ");
       Serial.println(iRet);
     }
-    g_iIOTLastUpdateTimeStamp = millis();
+    m_iIOTLastUpdateTimeStamp = millis();
   }
 }
 
@@ -140,7 +140,7 @@ void CWiFiTask::FindSSID()
 
   SetDisplayText( "Searching WiFi..." );
   
-  g_iSSIDInd = -1;
+  m_iSSIDInd = -1;
 
   WiFi.scanDelete();
 
@@ -155,14 +155,14 @@ void CWiFiTask::FindSSID()
 
     for ( int8_t iNetworkInd = 0; iNetworkInd < iNetworkCount && !bBreak; iNetworkInd++ )
     {
-      for ( byte iAccInd = 0; iAccInd < g_sWifiAccCount && !bBreak; iAccInd++ )
+      for ( byte iAccInd = 0; iAccInd < m_sWifiAccCount && !bBreak; iAccInd++ )
       {
-        if ( WiFi.SSID(iNetworkInd) == g_sWifiID[iAccInd] )
+        if ( WiFi.SSID(iNetworkInd) == m_sWifiID[iAccInd] )
         {
-          g_iSSIDInd = iAccInd;
+          m_iSSIDInd = iAccInd;
           bBreak = true;
           Serial.print( "SSID found: ");
-          Serial.println( g_sWifiID[g_iSSIDInd] );
+          Serial.println( m_sWifiID[m_iSSIDInd] );
           
         }
       }
@@ -174,7 +174,7 @@ void CWiFiTask::FindSSID()
 
 void CWiFiTask::ConnectToWiFi()
 {
-  if ( g_iSSIDInd == -1 )
+  if ( m_iSSIDInd == -1 )
   {
     Serial.println( "WiFi SSID not found." );
     SetDisplayText( "WiFi SSID not found." );
@@ -185,13 +185,13 @@ void CWiFiTask::ConnectToWiFi()
   if(WiFi.status() != WL_CONNECTED)
   {
     Serial.print("Attempting to connect to SSID: ");
-    Serial.println(g_sWifiID[g_iSSIDInd]);
+    Serial.println(m_sWifiID[m_iSSIDInd]);
 
     static char p[] = "Connecting to                                     ";
-    strcpy( &(p[15]), g_sWifiID[g_iSSIDInd] );
+    strcpy( &(p[15]), m_sWifiID[m_iSSIDInd] );
     SetDisplayText( p );
     
-    WiFi.begin(g_sWifiID[g_iSSIDInd], g_sWifiPass[g_iSSIDInd]); // Connect to WPA/WPA2 network. Change this line if using open or WEP network      
+    WiFi.begin(m_sWifiID[m_iSSIDInd], m_sWifiPass[m_iSSIDInd]); // Connect to WPA/WPA2 network. Change this line if using open or WEP network      
 
     for ( byte i = 0; i < 4; i++ )
     {

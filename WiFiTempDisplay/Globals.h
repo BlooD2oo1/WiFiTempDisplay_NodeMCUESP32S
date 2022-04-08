@@ -8,6 +8,8 @@
 #define HOURMINSEC_2_SEC( h, m, s ) ((h*60UL+m)*60UL+s)
 #define HOURMINSEC_2_MS( h, m, s ) (((h*60UL+m)*60UL+s)*1000UL)
 
+#define SENSORCOUNT 2
+
 void InitSemaphores();
 extern SemaphoreHandle_t g_pDisplayText_sem;
 extern char g_pDisplayText[80];
@@ -21,7 +23,7 @@ void SetRealTimeOffsetSec( unsigned long iRealTimeOffsetSec );
 bool GetRealTimeOffsetSec( unsigned long& iRealTimeOffsetSec );
 
 extern SemaphoreHandle_t g_Temp_sem;
-extern unsigned long g_pTempSum[2];
+extern unsigned long g_pTempSum[SENSORCOUNT];
 extern unsigned long g_iTempCount;
 void AddTemp( unsigned long* pTemp );
 void GetTempAndReset( unsigned long* pTempSum, unsigned long& iTempCount );

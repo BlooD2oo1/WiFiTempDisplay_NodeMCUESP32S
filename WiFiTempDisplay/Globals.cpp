@@ -53,7 +53,7 @@ void AddTemp( unsigned long* pTemp )
   xSemaphoreTake( g_Temp_sem, portMAX_DELAY );
   if ( g_iTempCount >= 2048 )
   {
-    for ( byte iSensorInd = 0; iSensorInd < 2; iSensorInd++ )
+    for ( byte iSensorInd = 0; iSensorInd < SENSORCOUNT; iSensorInd++ )
     {
       g_pTempSum[iSensorInd] = pTemp[iSensorInd];
     }
@@ -61,7 +61,7 @@ void AddTemp( unsigned long* pTemp )
   }
   else
   {
-    for ( byte iSensorInd = 0; iSensorInd < 2; iSensorInd++ )
+    for ( byte iSensorInd = 0; iSensorInd < SENSORCOUNT; iSensorInd++ )
     {
       g_pTempSum[iSensorInd] += pTemp[iSensorInd];
     }
@@ -72,7 +72,7 @@ void AddTemp( unsigned long* pTemp )
 void GetTempAndReset( unsigned long* pTempSum, unsigned long& iTempCount )
 {
   xSemaphoreTake( g_Temp_sem, portMAX_DELAY );
-  for ( byte iSensorInd = 0; iSensorInd < 2; iSensorInd++ )
+  for ( byte iSensorInd = 0; iSensorInd < SENSORCOUNT; iSensorInd++ )
   {
     pTempSum[iSensorInd] = g_pTempSum[iSensorInd];
     g_pTempSum[iSensorInd] = 0;

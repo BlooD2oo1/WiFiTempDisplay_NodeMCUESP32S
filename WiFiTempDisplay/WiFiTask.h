@@ -25,24 +25,24 @@ private:
 
 private:
 
-  static const byte   g_sWifiAccCount = 3;
-  const char*         g_sWifiID[g_sWifiAccCount] = { "BlooD2oo1", "Vodafone-AC86", "BlooD2oo2" };
-  const char*         g_sWifiPass[g_sWifiAccCount] = { "kakamatyi", "kzpr5j2hCxab", "Kakamatyi1" };
-  const unsigned long g_iThingSpeakChannelNumber = 1685795;
-  const char*         g_sThingSpeakWriteAPIKey = "PPAVQ6Z3DYDVFYC8";
+  static const byte   m_sWifiAccCount = 4;
+  const char*         m_sWifiID[m_sWifiAccCount] =	 { "BlooD2oo1", "Vodafone-AC86", "BlooD2oo2",  "Neocore Publeak" };
+  const char*         m_sWifiPass[m_sWifiAccCount] = { "kakamatyi", "kzpr5j2hCxab",  "Kakamatyi1", "feudum007" };
+  const unsigned long m_iThingSpeakChannelNumber = 1685795;
+  const char*         m_sThingSpeakWriteAPIKey = "PPAVQ6Z3DYDVFYC8";
 
   WiFiClient          client;
   WiFiUDP             ntpUDP;
   NTPClient           timeClient;
 
-  unsigned long       g_iThingSpeakLastUpdateTimeStamp;
-  int8_t              g_iSSIDInd;
+  unsigned long       m_iThingSpeakLastUpdateTimeStamp;
+  int8_t              m_iSSIDInd;
 
-  unsigned long       g_iEpochTimeLastUpdateTimeStamp;
+  unsigned long       m_iEpochTimeLastUpdateTimeStamp;
 
-  unsigned long       g_iDisplayTextLastUpdateTimeStamp;
+  unsigned long       m_iDisplayTextLastUpdateTimeStamp;
 
-  unsigned long       g_iIOTLastUpdateTimeStamp;
+  unsigned long       m_iIOTLastUpdateTimeStamp;
 };
 
 #endif

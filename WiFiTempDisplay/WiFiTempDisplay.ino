@@ -16,15 +16,11 @@ void setup()
   digitalWrite(LED_BUILTIN, LOW);
 
   InitSemaphores();
-
+  
   esp_reset_reason_t iResetReason = esp_reset_reason();
-  if ( iResetReason != ESP_RST_SW )
-  {
-    Serial.println( "Clear" );
-    g_cMainTask.Clear();
-  }
+  bool bInitialize = iResetReason != ESP_RST_SW;
 
-  g_cMainTask.Setup();
+  g_cMainTask.Setup( bInitialize );
 
   TaskHandle_t hTaskWiFi;
   xTaskCreatePinnedToCore(WiFiTask,"WiFi",10000,NULL,1,&hTaskWiFi,0);  
