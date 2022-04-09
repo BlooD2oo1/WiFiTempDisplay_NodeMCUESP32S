@@ -19,6 +19,7 @@ public:
 private:
   void    Render();
   void    UpdateSensors();
+  void    UpdateTouchSensors();
 
 private:
   const uint8_t     m_iOneWireBus = 13;
@@ -32,13 +33,16 @@ private:
 
   //RTC_NOINIT_ATTR int m_iCounter = 0;
 
-  static const byte        m_iTempDataCount = 63;
-  NOINIT static int16_t    m_pTempMin[SENSORCOUNT][m_iTempDataCount];
-  NOINIT static int16_t    m_pTempMax[SENSORCOUNT][m_iTempDataCount];
+
+  static const uint16_t    m_iTempDataCount = 63;
+  NOINIT static int32_t    m_pTemp[SENSORCOUNT][m_iTempDataCount];
   NOINIT static byte       m_iTempDataPointer;
-  static const int16_t     m_iTempDataCurrCount = 45;
+  static const int16_t     m_iTempDataCurrCount = 1800;  //3600: 750ms-es homerovel igy pont 1 napot rajzol ki a grafikon
   NOINIT static int16_t    m_iTempDataCurrCounter;
 
+  static const byte        m_bTouchSensorCount = 2;
+  bool                     m_bTouch[m_bTouchSensorCount];
+  bool                     m_bTouchTransient[m_bTouchSensorCount];
 };
 
 #endif
