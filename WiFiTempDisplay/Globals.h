@@ -2,6 +2,7 @@
 #define GLOBALS_H
 
 #include <Arduino.h>
+#include <Time.h>
 
 #define NOINIT RTC_NOINIT_ATTR
 
@@ -16,11 +17,10 @@ extern char g_pDisplayText[80];
 void SetDisplayText( const char* pText );
 void GetDisplayText( char* pText );
 
-extern SemaphoreHandle_t g_iRealTimeOffsetSec_sem;
-extern unsigned long g_iRealTimeOffsetSec;
-extern bool g_bRealTimeOffsetValid;
-void SetRealTimeOffsetSec( unsigned long iRealTimeOffsetSec );
-bool GetRealTimeOffsetSec( unsigned long& iRealTimeOffsetSec );
+extern SemaphoreHandle_t g_pDisplayTime_sem;
+extern tm g_sDisplayTime;
+void SetDisplayTime( const tm* pTime );
+void GetDisplayTime( tm* pTime );
 
 extern SemaphoreHandle_t g_Temp_sem;
 extern unsigned long g_pTempSum[SENSORCOUNT];

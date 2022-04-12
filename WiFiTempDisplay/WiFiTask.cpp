@@ -33,11 +33,13 @@ void CWiFiTask::Setup()
   timeClient.setTimeOffset(7200);
 
   FindSSID();
+
 }
 
 void CWiFiTask::Loop()
 {
   UpdateDisplayText();
+  UpdateTime();
 
   if ( WiFi.status() != WL_CONNECTED )
   {
@@ -47,8 +49,6 @@ void CWiFiTask::Loop()
 
   if ( WiFi.status() == WL_CONNECTED )
   {
-    UpdateTime();
-
     UpdateIOT();
 
     digitalWrite(LED_BUILTIN, HIGH);
@@ -61,13 +61,13 @@ void CWiFiTask::UpdateDisplayText()
   {
     if( WiFi.status() == WL_CONNECTED )
     {
-      static char p[] = "Connected to                                     ";
-      strcpy( &(p[14]), m_sWifiID[m_iSSIDInd] );
+      static char p[] = "Connected";
+      //strcpy( &(p[14]), m_sWifiID[m_iSSIDInd] );
       SetDisplayText( p );
     }
     else
     {
-      static char p[] = "No Internet";
+      static char p[] = "Offline";
       SetDisplayText( p );
     }
 
@@ -75,19 +75,38 @@ void CWiFiTask::UpdateDisplayText()
   }
 }
 
+void initTime()
+{
+  struct tm timeinfo;
+
+  Serial.println("Setting up time");
+  configTime(0, 0, "pool.ntp.org");    // First connect to NTP server, with 0 TZ offset
+  if(!getLocalTime(&timeinfo))
+  {
+    Serial.println("  Failed to obtain time");
+    return;
+  }
+  Serial.println("  Got the time from NTP");
+  // Now we can set the real timezone
+  Serial.printf("  Setting Timezone to %s\n","CET-1CEST,M3.5.0,M10.5.0/3");
+  setenv("TZ","CET-1CEST,M3.5.0,M10.5.0/3",1);  //  Now adjust the TZ.  Clock settings are adjusted to show the new local time
+  tzset();
+}
+
 void CWiFiTask::UpdateTime()
 {
-  if ( millis() - m_iEpochTimeLastUpdateTimeStamp > HOURMINSEC_2_MS( 0UL, 4UL, 0UL ) )
+  if ( millis() - m_iEpochTimeLastUpdateTimeStamp > HOURMINSEC_2_MS( 0UL, 0UL, 1UL ) )
   {
-    if ( timeClient.update() )
+    struct tm timeinfo = {0};
+    if(!getLocalTime(&timeinfo))
     {
-      unsigned long unix_epoch = timeClient.getEpochTime();    // Get Unix epoch time from the NTP server
-      PrintSec( unix_epoch );
-      unix_epoch = unix_epoch % HOURMINSEC_2_SEC( 24UL, 0UL, 0UL );
-      unix_epoch = unix_epoch + HOURMINSEC_2_SEC( 24UL, 0UL, 0UL ) - (millis()/1000UL);
-      SetRealTimeOffsetSec( unix_epoch );
+      Serial.println("Failed to obtain time 1");
+      SetDisplayTime( &timeinfo );
     }
-
+    else
+    {
+      SetDisplayTime( &timeinfo );
+    }
     m_iEpochTimeLastUpdateTimeStamp = millis();
   }
 }
@@ -187,8 +206,8 @@ void CWiFiTask::ConnectToWiFi()
     Serial.print("Attempting to connect to SSID: ");
     Serial.println(m_sWifiID[m_iSSIDInd]);
 
-    static char p[] = "Connecting to                                     ";
-    strcpy( &(p[15]), m_sWifiID[m_iSSIDInd] );
+    static char p[] = "Connecting...";
+    //strcpy( &(p[15]), m_sWifiID[m_iSSIDInd] );
     SetDisplayText( p );
     
     WiFi.begin(m_sWifiID[m_iSSIDInd], m_sWifiPass[m_iSSIDInd]); // Connect to WPA/WPA2 network. Change this line if using open or WEP network      
@@ -205,8 +224,8 @@ void CWiFiTask::ConnectToWiFi()
       }
     }
     if(WiFi.status() == WL_CONNECTED)
-    {
-      timeClient.begin();
+    { 
+      initTime();
       Serial.println("\nConnected.");
     }
     else

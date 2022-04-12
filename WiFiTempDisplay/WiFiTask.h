@@ -6,6 +6,7 @@
 #include <WiFiUdp.h>
 #include "Globals.h"
 
+
 class CWiFiTask
 {
 public:
@@ -34,6 +35,8 @@ private:
   WiFiClient          client;
   WiFiUDP             ntpUDP;
   NTPClient           timeClient;
+
+
 
   unsigned long       m_iThingSpeakLastUpdateTimeStamp;
   int8_t              m_iSSIDInd;

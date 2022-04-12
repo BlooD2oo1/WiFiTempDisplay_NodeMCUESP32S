@@ -4,8 +4,8 @@ void InitSemaphores()
 {
   g_pDisplayText_sem = xSemaphoreCreateBinary();
   xSemaphoreGive( g_pDisplayText_sem );
-  g_iRealTimeOffsetSec_sem = xSemaphoreCreateBinary();
-  xSemaphoreGive( g_iRealTimeOffsetSec_sem );
+  g_pDisplayTime_sem = xSemaphoreCreateBinary();
+  xSemaphoreGive( g_pDisplayTime_sem );  
   g_Temp_sem = xSemaphoreCreateBinary();
   xSemaphoreGive( g_Temp_sem );
 }
@@ -25,24 +25,19 @@ void GetDisplayText( char* pText )
   xSemaphoreGive( g_pDisplayText_sem );
 }
 
-SemaphoreHandle_t g_iRealTimeOffsetSec_sem;
-unsigned long g_iRealTimeOffsetSec = 0;
-bool g_bRealTimeOffsetValid = false;
-void SetRealTimeOffsetSec( unsigned long iRealTimeOffsetSec )
+SemaphoreHandle_t g_pDisplayTime_sem;
+tm g_sDisplayTime = {0};
+void SetDisplayTime( const tm* pTime )
 {
-  xSemaphoreTake( g_iRealTimeOffsetSec_sem, portMAX_DELAY );
-  g_iRealTimeOffsetSec = iRealTimeOffsetSec;
-  g_bRealTimeOffsetValid = true;
-  xSemaphoreGive( g_iRealTimeOffsetSec_sem );
+  xSemaphoreTake( g_pDisplayTime_sem, portMAX_DELAY );
+  memcpy( &g_sDisplayTime, pTime, sizeof( tm ) );
+  xSemaphoreGive( g_pDisplayTime_sem );
 }
-bool GetRealTimeOffsetSec( unsigned long& iRealTimeOffsetSec )
+void GetDisplayTime( tm* pTime )
 {
-  bool bRet = false;
-  xSemaphoreTake( g_iRealTimeOffsetSec_sem, portMAX_DELAY );
-  iRealTimeOffsetSec = g_iRealTimeOffsetSec;
-  bRet = g_bRealTimeOffsetValid;
-  xSemaphoreGive( g_iRealTimeOffsetSec_sem );
-  return bRet;
+  xSemaphoreTake( g_pDisplayTime_sem, portMAX_DELAY );
+  memcpy( pTime, &g_sDisplayTime, sizeof( tm ) );
+  xSemaphoreGive( g_pDisplayTime_sem );
 }
 
 SemaphoreHandle_t g_Temp_sem;

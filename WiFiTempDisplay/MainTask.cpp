@@ -1,8 +1,8 @@
 #include "MainTask.h"
 
   int32_t    CMainTask::m_pTemp[SENSORCOUNT][m_iTempDataCount];
-  byte       CMainTask::m_iTempDataPointer;
-  int16_t   CMainTask::m_iTempDataCurrCounter;
+  int16_t    CMainTask::m_iTempDataPointer;
+  int16_t    CMainTask::m_iTempDataCurrCounter;
 
 CMainTask::CMainTask()
 : m_OneWire(m_iOneWireBus)
@@ -45,9 +45,9 @@ void CMainTask::Setup( bool bInitialize )
     m_iTempDataCurrCounter = m_iTempDataCurrCount;
     for ( byte iSensorInd = 0; iSensorInd < SENSORCOUNT; iSensorInd++ )
     {
-      for ( byte iDataInd = 0; iDataInd < m_iTempDataCount; iDataInd++ )
+      for ( int16_t iDataInd = 0; iDataInd < m_iTempDataCount; iDataInd++ )
       {
-        m_pTemp[iSensorInd][iDataInd] = (int32_t)m_iSensorTemperature[iSensorInd] * (int32_t)m_iTempDataCurrCount;
+        m_pTemp[iSensorInd][iDataInd] = ( (int32_t)m_iSensorTemperature[iSensorInd] + (int32_t)absi((((int16_t)iDataInd)%6)-3)*12 ) * (int32_t)m_iTempDataCurrCount;
       }
     }
   }
@@ -61,7 +61,6 @@ void CMainTask::Loop()
 
   Render();
 }
-
 
 void CMainTask::Render()
 {
@@ -91,18 +90,19 @@ void CMainTask::Render()
 
   m_u8g2.clearBuffer();
 
+  m_u8g2.sendF("c", 0xa6 );
+  static byte bTouchCounter0 = 0;
+  static byte bTouchCounter1 = 0;
+  if ( m_bTouchTransient[0] )
+  {
+    bTouchCounter0++;
+    m_u8g2.sendF("c", 0xa7 );
+  }
+
   if ( m_bTouchTransient[1] )
   {
-    static bool b = false;
-    b = !b;
-    if ( b )
-    {
-      m_u8g2.sendF("c", 0xa7 );
-    }
-    else
-    {
-      m_u8g2.sendF("c", 0xa6 );
-    }
+    bTouchCounter1++;
+    m_u8g2.sendF("c", 0xa7 );
   }
 
   //u8g2.setFont( u8g2_font_blipfest_07_tr );
@@ -117,17 +117,13 @@ void CMainTask::Render()
   GetDisplayText( pText );
   m_u8g2.drawStr( 0, 5+iYOffsetMsg, pText );
 
-  unsigned long iRealTimeSec = millis()/1000UL;
-  unsigned long iRealTimeOffsetSec;
-  if ( GetRealTimeOffsetSec( iRealTimeOffsetSec ) )
-  {
-    iRealTimeSec = ( iRealTimeOffsetSec + iRealTimeSec ) % HOURMINSEC_2_SEC( 24UL, 0UL, 0UL );
-    PrintSec( iRealTimeSec, pText );
-    u8g2_uint_t iTextWidth = m_u8g2.getStrWidth( pText );
-    m_u8g2.drawStr( 128 - iTextWidth, 5+iYOffsetMsg, pText );
-  }
+  static tm sTimeInfo;
+  GetDisplayTime( &sTimeInfo );
+  strftime( pText, 80, "%b %d %H:%M:%S", &sTimeInfo );
+  u8g2_uint_t iTextWidth = m_u8g2.getStrWidth( pText );
+  m_u8g2.drawStr( 128 - iTextWidth, 5+iYOffsetMsg, pText );  
 
-  if ( iRealTimeSec > HOURMINSEC_2_SEC( 10UL, 0UL, 0UL ) && iRealTimeSec < HOURMINSEC_2_SEC( 22UL, 0UL, 0UL ) )
+  if ( sTimeInfo.tm_hour > 9 && sTimeInfo.tm_hour < 21 )
   {
     m_u8g2.setContrast( 255 );
   }
@@ -162,30 +158,35 @@ void CMainTask::Render()
     m_u8g2.drawFrame( iXOffset[iSensorInd], iYOffsetGraph, m_iTempDataCount, 32 );
   }
 
-  float fMinMin[2] = {32000,32000};
-  float fMaxMax[2] = {-32000,-32000};
+  float fMinMin[SENSORCOUNT] = {32760.0f,32760.0f};
+  float fMaxMax[SENSORCOUNT] = {-32760.0f,-32760.0f};
   for ( byte iSensorInd = 0; iSensorInd < SENSORCOUNT; iSensorInd++ )
   {
-    for ( byte iDataInd = 0; iDataInd < m_iTempDataCount; iDataInd++ )
+    for ( int16_t iDataInd = 0; iDataInd < m_iTempDataCount; iDataInd++ )
     {
-      float fTemp = ( (float)m_pTemp[iSensorInd][iDataInd] / (float)( (iDataInd==m_iTempDataPointer) ? m_iTempDataCurrCounter : m_iTempDataCurrCount ) );
+      float fDiv = (float)m_iTempDataCurrCount;
+      if ( iDataInd == m_iTempDataPointer )
+      {
+        fDiv = (float)m_iTempDataCurrCounter;
+      }
+      float fTemp = (float)m_pTemp[iSensorInd][iDataInd] / fDiv;
       fMinMin[iSensorInd] = min( fMinMin[iSensorInd], fTemp );
       fMaxMax[iSensorInd] = max( fMaxMax[iSensorInd], fTemp );
     }
 
-	{
-		m_u8g2.setFont( u8g2_font_blipfest_07_tr );
-		sprintf( pText, "%.1f", fMinMin[iSensorInd] * 0.0078125f );
-    //sprintf( pText, "%.1f", m_fTouch1 );
-		m_u8g2.drawStr( iXOffset[iSensorInd] + m_iTempDataCount / 2 - 20, 23+iYOffsetText, pText);
-		sprintf( pText, "%.1f", fMaxMax[iSensorInd] * 0.0078125f );
-    //sprintf( pText, "%.1f", m_fTouch2 );
-		m_u8g2.drawStr( iXOffset[iSensorInd] + m_iTempDataCount / 2 + 7, 23+iYOffsetText, pText);
-	}
+    {
+      m_u8g2.setFont( u8g2_font_blipfest_07_tr );
+      sprintf( pText, "%.1f", fMinMin[iSensorInd] * 0.0078125f );
+      //sprintf( pText, "%.1f", m_fTouch1 );
+      m_u8g2.drawStr( iXOffset[iSensorInd] + m_iTempDataCount / 2 - 20, 23+iYOffsetText, pText);
+      sprintf( pText, "%.1f", fMaxMax[iSensorInd] * 0.0078125f );
+      //sprintf( pText, "%.1f", m_fTouch2 );
+      m_u8g2.drawStr( iXOffset[iSensorInd] + m_iTempDataCount / 2 + 7, 23+iYOffsetText, pText);
+    }
   }
 
-  float fMinMinMin = 32000;
-  float fMaxMaxMax = -32000;
+  float fMinMinMin = 32760.0f;
+  float fMaxMaxMax = -32760.0f;
   for ( byte iSensorInd = 0; iSensorInd < SENSORCOUNT; iSensorInd++ )
   {
 	  fMinMinMin = min( fMinMin[iSensorInd], fMinMinMin );
@@ -205,42 +206,49 @@ void CMainTask::Render()
     for ( int16_t iDataInd = 0; iDataInd < m_iTempDataCount; iDataInd++ )
     {
       int16_t iInd = ( iDataInd + m_iTempDataPointer + 1 ) % m_iTempDataCount;
-      
-      
-      float fTemp = ( (float)m_pTemp[iSensorInd][iInd] / (float)( (iInd==m_iTempDataPointer) ? m_iTempDataCurrCounter : m_iTempDataCurrCount ) );
-      float fA = ( ( fTemp - fMinMinMin ) * 32.0f ) / ( fMaxMaxMax - fMinMinMin );
+      float fDiv = (float)m_iTempDataCurrCount;
+      if ( iInd == m_iTempDataPointer )
+      {
+        fDiv = (float)m_iTempDataCurrCounter;
+      }
+      float fTemp = (float)m_pTemp[iSensorInd][iInd] / fDiv;
+      float fA = ( fTemp - fMinMinMin ) / ( fMaxMaxMax - fMinMinMin );
+      fA *= 30.0f;
+
       if ( iDataInd == 0) fB = fA;
 
-      int16_t iFrom;
+      float fFrom;
       int16_t iCount;
       if ( fA < fB )
       {
-        iFrom = (int16_t)fA;
-        iCount = (int16_t)fB - iFrom;
+        fFrom = fA;
+        iCount = (int16_t)(fB - fA);
       }
       else
       {
-        iFrom = (int16_t)fB;
-        iCount = (int16_t)fA - iFrom;
+        fFrom = fB;
+        iCount = (int16_t)(fA - fB);
       }
 
       fB = fA;
 
       float fSubPixelOffsetX = 1.0f - (float)(m_iTempDataCurrCounter) / (float)m_iTempDataCurrCount;
-      //for ( byte c = 0; c < ( ( bGraphType & 1 ) ? 1 : 2 ); c++ )
+      for ( byte c = 0; c < (bTouchCounter1%2)+1; c++ )
       for ( int16_t i = 0; i <= iCount; i++ )
       {
         float fRndX = (float)random( 4096 ) / 2048.0f - 1.0f;
         float fRndY = (float)random( 4096 ) / 2048.0f - 1.0f;
-        fRndX *= absf( fRndX );
-        fRndY *= absf( fRndY );
-        fRndX *= 0.98f;
-        fRndY *= 0.98f;
+        //fRndX *= absf( fRndX );
+        //fRndY *= absf( fRndY );
+        fRndX *= fRndX*fRndX;
+        fRndY *= fRndY*fRndY;
+        fRndX *= (float)(bTouchCounter0%3)*0.6f;//0.98f;
+        fRndY *= (float)(bTouchCounter0%3)*0.6f;//0.98f;
 
         int16_t x = (int16_t)( fSubPixelOffsetX + fRndX + (float)iDataInd );
-        int16_t y = (int16_t)( 32.0f - ( fA + fRndY ) + (float)i );
+        int16_t y = (int16_t)( ( fFrom + fRndY ) + (float)i );
 
-        m_u8g2.drawPixel( iXOffset[iSensorInd] + x, y + iYOffsetGraph );
+        m_u8g2.drawPixel( iXOffset[iSensorInd] + x, iYOffsetGraph + (30-y) );
       }
       //m_u8g2.drawVLine( iXOffset[iSensorInd]+iDataInd, iA, iB - iA + 1 );
     }
@@ -287,17 +295,11 @@ void CMainTask::UpdateSensors()
   }
   m_iTempDataCurrCounter++;
 
-  /*for ( byte iSensorInd = 0; iSensorInd < SENSORCOUNT; iSensorInd++ )
-  {
-    Serial.print( m_Sensors.rawToCelsius( m_iSensorTemperature[iSensorInd] ) );
-    Serial.print( " C        ");
-  }
-  Serial.println( "" );*/
 }
 
 void CMainTask::UpdateTouchSensors()
 {
-  static float fTouch[m_bTouchSensorCount] = {0.0f};
+  static float fTouch[m_bTouchSensorCount] = {100.0f,100.0f};
   fTouch[0] = lerp( (float)touchRead(12)-90.0f, fTouch[0], 0.94f );
   fTouch[1] = lerp( (float)touchRead(4)-70.0f, fTouch[1], 0.94f );
 

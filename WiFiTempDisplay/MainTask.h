@@ -34,10 +34,10 @@ private:
   //RTC_NOINIT_ATTR int m_iCounter = 0;
 
 
-  static const uint16_t    m_iTempDataCount = 63;
+  static const int16_t     m_iTempDataCount = 63;
   NOINIT static int32_t    m_pTemp[SENSORCOUNT][m_iTempDataCount];
-  NOINIT static byte       m_iTempDataPointer;
-  static const int16_t     m_iTempDataCurrCount = 1800;  //3600: 750ms-es homerovel igy pont 1 napot rajzol ki a grafikon
+  NOINIT static int16_t    m_iTempDataPointer;
+  static const int16_t     m_iTempDataCurrCount = 1828;  //1828: 750ms-es homerovel igy pont 1 napot rajzol ki a grafikon
   NOINIT static int16_t    m_iTempDataCurrCounter;
 
   static const byte        m_bTouchSensorCount = 2;
