@@ -8,6 +8,7 @@ CMainTask::CMainTask()
 : m_OneWire(m_iOneWireBus)
 , m_Sensors(&m_OneWire)
 , m_u8g2( U8G2_R2 )
+, m_bDisplayOn( true )
 {
   for ( int i = 0; i < m_bTouchSensorCount; i++ )
   {
@@ -55,7 +56,7 @@ void CMainTask::Setup( bool bInitialize )
 
 void CMainTask::Loop()
 {
-  UpdateTouchSensors();
+  //UpdateTouchSensors();
 
   UpdateSensors();
 
@@ -64,6 +65,24 @@ void CMainTask::Loop()
 
 void CMainTask::Render()
 {
+  static tm sTimeInfo;
+  GetDisplayTime( &sTimeInfo );
+
+  bool bTurnOnDisplay = false;
+  if ( sTimeInfo.tm_hour > 7 && sTimeInfo.tm_hour < 23 )
+  {
+    bTurnOnDisplay = true;
+  }
+  if ( m_bDisplayOn != bTurnOnDisplay )
+  {
+      m_bDisplayOn = bTurnOnDisplay;
+      m_u8g2.setPowerSave( m_bDisplayOn ? 0 : 1 );
+  }
+  if ( m_bDisplayOn == false )
+  {
+    return;
+  }
+
   const uint iXOffset[SENSORCOUNT] = {0,65};
   uint iYOffsetGraph;
   uint iYOffsetText;
@@ -87,11 +106,11 @@ void CMainTask::Render()
     break;    
   }
 
-
   m_u8g2.clearBuffer();
 
   m_u8g2.sendF("c", 0xa6 );
-  static byte bTouchCounter0 = 0;
+  
+  /*static byte bTouchCounter0 = 0;
   static byte bTouchCounter1 = 0;
   if ( m_bTouchTransient[0] )
   {
@@ -103,7 +122,7 @@ void CMainTask::Render()
   {
     bTouchCounter1++;
     m_u8g2.sendF("c", 0xa7 );
-  }
+  }*/
 
   //u8g2.setFont( u8g2_font_blipfest_07_tr );
   //u8g2.setFont( u8g2_font_lastapprenticebold_tr );
@@ -117,8 +136,7 @@ void CMainTask::Render()
   GetDisplayText( pText );
   m_u8g2.drawStr( 0, 5+iYOffsetMsg, pText );
 
-  static tm sTimeInfo;
-  GetDisplayTime( &sTimeInfo );
+
   strftime( pText, 80, "%b %d %H:%M:%S", &sTimeInfo );
   u8g2_uint_t iTextWidth = m_u8g2.getStrWidth( pText );
   m_u8g2.drawStr( 128 - iTextWidth, 5+iYOffsetMsg, pText );  
@@ -233,7 +251,8 @@ void CMainTask::Render()
       fB = fA;
 
       float fSubPixelOffsetX = 1.0f - (float)(m_iTempDataCurrCounter) / (float)m_iTempDataCurrCount;
-      for ( byte c = 0; c < (bTouchCounter1%2)+1; c++ )
+      //for ( byte c = 0; c < (bTouchCounter1%2)+1; c++ )
+      for ( byte c = 0; c < 2; c++ )
       for ( int16_t i = 0; i <= iCount; i++ )
       {
         float fRndX = (float)random( 4096 ) / 2048.0f - 1.0f;
@@ -242,11 +261,11 @@ void CMainTask::Render()
         //fRndY *= absf( fRndY );
         fRndX *= fRndX*fRndX;
         fRndY *= fRndY*fRndY;
-        fRndX *= (float)(bTouchCounter0%3)*0.6f;//0.98f;
-        fRndY *= (float)(bTouchCounter0%3)*0.6f;//0.98f;
+        fRndX *= /*(float)(bTouchCounter0%3)*0.5f;//*/0.98f;
+        fRndY *= /*(float)(bTouchCounter0%3)*0.5f;//*/0.98f;
 
-        int16_t x = (int16_t)( fSubPixelOffsetX + fRndX + (float)iDataInd );
-        int16_t y = (int16_t)( ( fFrom + fRndY ) + (float)i );
+        int16_t x = (int16_t)( fSubPixelOffsetX + fRndX ) + iDataInd;
+        int16_t y = (int16_t)( fFrom + fRndY ) + i;
 
         m_u8g2.drawPixel( iXOffset[iSensorInd] + x, iYOffsetGraph + (30-y) );
       }

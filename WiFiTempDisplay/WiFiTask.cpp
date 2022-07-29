@@ -43,7 +43,7 @@ void CWiFiTask::Loop()
 
   if ( WiFi.status() != WL_CONNECTED )
   {
-    digitalWrite(LED_BUILTIN, LOW);
+    digitalWrite(LED_BUILTIN, HIGH);
     ConnectToWiFi();
   }
 
@@ -51,7 +51,7 @@ void CWiFiTask::Loop()
   {
     UpdateIOT();
 
-    digitalWrite(LED_BUILTIN, HIGH);
+    digitalWrite(LED_BUILTIN, LOW);
   }
 }
 
