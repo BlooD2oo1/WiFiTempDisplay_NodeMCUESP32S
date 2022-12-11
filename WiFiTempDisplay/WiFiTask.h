@@ -3,6 +3,7 @@
 
 #include <WiFi.h>
 #include <NTPClient.h>
+#include <HTTPClient.h>
 #include <WiFiUdp.h>
 #include "Globals.h"
 

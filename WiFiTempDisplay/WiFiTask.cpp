@@ -115,8 +115,7 @@ void CWiFiTask::UpdateIOT()
 {
   if ( millis() - m_iIOTLastUpdateTimeStamp > HOURMINSEC_2_MS( 0UL, 5UL, 0UL ) )
   {
-    Serial.println( "Updating ThingSpeak" );
-    SetDisplayText( "Updating IOT" );
+    m_iIOTLastUpdateTimeStamp = millis();
 
     unsigned long pTempSum[SENSORCOUNT];
     unsigned long iTempCount;
@@ -131,25 +130,56 @@ void CWiFiTask::UpdateIOT()
     Serial.print("\t\tAvgTempB: ");
     Serial.print( fB );
     Serial.println(" C");
-    
-    ThingSpeak.setField( 1, fA );
-    ThingSpeak.setField( 2, fB );
-    ThingSpeak.setField( 3, fB-fA );
-    ThingSpeak.setField( 4, (float)( millis()/1000UL )/3600.0f );
 
+    SetDisplayText( "Updating IOT" );
 
-    int iRet = ThingSpeak.writeFields( m_iThingSpeakChannelNumber, m_sThingSpeakWriteAPIKey );
-
-    if(iRet == 200)
+    // thingspeak update
     {
-      Serial.println("ThingSpeak update successful.");
+      Serial.println( "Updating ThingSpeak" );      
+
+      ThingSpeak.setField( 1, fA );
+      ThingSpeak.setField( 2, fB );
+      ThingSpeak.setField( 3, (float)( millis()/1000UL )/3600.0f );
+
+      int iRet = ThingSpeak.writeFields( m_iThingSpeakChannelNumber, m_sThingSpeakWriteAPIKey );
+
+      if(iRet == 200)
+      {
+        Serial.println("ThingSpeak update successful.");
+      }
+      else
+      {
+        Serial.print("Problem updating ThingSpeak channels. HTTP error code: ");
+        Serial.println(iRet);
+      }
     }
-    else
+
+    //noybi update
     {
-      Serial.print("Problem updating ThingSpeak channels. HTTP error code: ");
-      Serial.println(iRet);
+      Serial.println( "Updating Noybi" );
+  
+      {
+        char cNoybi[80] = "http://home.noybi.hu/public/dev/arduinotemp/put.php?valami=59&akarmi=";
+        sprintf(&cNoybi[69], "%.2f", fA);
+
+        HTTPClient http;  //Declare an object of class HTTPClient
+        http.begin( client, cNoybi );
+        http.GET();
+        http.end();   //Close connection
+      }
+      
+      {
+        char cNoybi[80] = "http://home.noybi.hu/public/dev/arduinotemp/put.php?valami=60&akarmi=";
+        sprintf(&cNoybi[69], "%.2f", fB);
+
+        HTTPClient http;  //Declare an object of class HTTPClient
+        http.begin( client, cNoybi );
+        http.GET();
+        http.end();   //Close connection
+      }
+
+      Serial.println( "Updating Noybi done." );
     }
-    m_iIOTLastUpdateTimeStamp = millis();
   }
 }
 

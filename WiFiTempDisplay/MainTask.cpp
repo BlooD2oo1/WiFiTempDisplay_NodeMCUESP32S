@@ -28,6 +28,7 @@ void CMainTask::Setup( bool bInitialize )
   Serial.println(xPortGetCoreID());
 
   m_Sensors.begin();
+  //PrintSensorDeviceAddresses();
   m_Sensors.setResolution( 12 );
   m_Sensors.setWaitForConversion(false);
   m_Sensors.requestTemperatures();
@@ -69,7 +70,7 @@ void CMainTask::Render()
   GetDisplayTime( &sTimeInfo );
 
   bool bTurnOnDisplay = false;
-  if ( sTimeInfo.tm_hour > 7 && sTimeInfo.tm_hour < 23 )
+  if ( sTimeInfo.tm_hour > 5 && sTimeInfo.tm_hour < 18 )
   {
     bTurnOnDisplay = true;
   }
@@ -141,7 +142,7 @@ void CMainTask::Render()
   u8g2_uint_t iTextWidth = m_u8g2.getStrWidth( pText );
   m_u8g2.drawStr( 128 - iTextWidth, 5+iYOffsetMsg, pText );  
 
-  if ( sTimeInfo.tm_hour > 9 && sTimeInfo.tm_hour < 21 )
+  if ( sTimeInfo.tm_hour > 10 && sTimeInfo.tm_hour < 14 )
   {
     m_u8g2.setContrast( 255 );
   }
@@ -159,7 +160,7 @@ void CMainTask::Render()
         u8g2_uint_t iTextWidth = m_u8g2.getStrWidth( pText );
         m_u8g2.drawStr( iXOffset[iSensorInd] + ( m_iTempDataCount - iTextWidth ) / 2, 15+iYOffsetText, pText);
     }
-    /*const uint iTickLenX = 6;
+    const uint iTickLenX = 6;
     const uint iTickLenY = 3;
     m_u8g2.drawHLine( iXOffset[iSensorInd], 0+iYOffsetGraph, iTickLenX );
     m_u8g2.drawVLine( iXOffset[iSensorInd], 1+iYOffsetGraph, iTickLenY );
@@ -171,9 +172,9 @@ void CMainTask::Render()
     m_u8g2.drawVLine( iXOffset[iSensorInd], 32-iTickLenY+iYOffsetGraph, iTickLenY );
 
     m_u8g2.drawHLine( iXOffset[iSensorInd]+m_iTempDataCount-iTickLenX, 32+iYOffsetGraph, iTickLenX );
-    m_u8g2.drawVLine( iXOffset[iSensorInd]+m_iTempDataCount-1, 32-iTickLenY+iYOffsetGraph, iTickLenY );*/
+    m_u8g2.drawVLine( iXOffset[iSensorInd]+m_iTempDataCount-1, 32-iTickLenY+iYOffsetGraph, iTickLenY );
 
-    m_u8g2.drawFrame( iXOffset[iSensorInd], iYOffsetGraph, m_iTempDataCount, 32 );
+    //m_u8g2.drawFrame( iXOffset[iSensorInd], iYOffsetGraph, m_iTempDataCount, 32 );
   }
 
   float fMinMin[SENSORCOUNT] = {32760.0f,32760.0f};
@@ -340,4 +341,52 @@ void CMainTask::UpdateTouchSensors()
   //Serial.print( "\t\t\t        " );
   //Serial.println(touchRead(4));
   //delay(200);
+}
+
+// function to print a device address
+void printAddress(DeviceAddress deviceAddress)
+{
+  for (uint8_t i = 0; i < 8; i++)
+  {
+    if (deviceAddress[i] < 16)
+    {
+      Serial.print("0");
+    }
+    Serial.print(deviceAddress[i], HEX);
+  }
+}
+void CMainTask::PrintSensorDeviceAddresses()
+{
+  int numberOfDevices; // Number of temperature devices found
+
+  DeviceAddress tempDeviceAddress; // We'll use this variable to store a found device address
+
+  // Grab a count of devices on the wire
+  numberOfDevices = m_Sensors.getDeviceCount();
+  
+  // locate devices on the bus
+  Serial.print("Locating devices...");
+  Serial.print("Found ");
+  Serial.print(numberOfDevices, DEC);
+  Serial.println(" devices.");
+
+  // Loop through each device, print out address
+  for(int i=0;i<numberOfDevices; i++)
+  {
+    // Search the wire for address
+    if(m_Sensors.getAddress(tempDeviceAddress, i))
+    {
+      Serial.print("Found device ");
+      Serial.print(i, DEC);
+      Serial.print(" with address: ");
+      printAddress(tempDeviceAddress);
+      Serial.println();
+		}
+    else
+    {
+		  Serial.print("Found ghost device at ");
+		  Serial.print(i, DEC);
+		  Serial.print(" but could not detect address. Check power and cabling");
+		}
+  }
 }

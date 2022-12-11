@@ -21,11 +21,13 @@ private:
   void    UpdateSensors();
   void    UpdateTouchSensors();
 
+  void    PrintSensorDeviceAddresses();
+
 private:
   const uint8_t     m_iOneWireBus = 13;
   OneWire           m_OneWire;
   DallasTemperature m_Sensors;
-  const uint8_t     m_piSensorDeviceAddress[SENSORCOUNT][8] = { { 0x28, 0x44, 0xF3, 0xD0, 0x5C, 0x21, 0x01, 0xC5 },
+  const uint8_t     m_piSensorDeviceAddress[SENSORCOUNT][8] = { { 0x28, 0x22, 0x43, 0x97, 0x94, 0x07, 0x03, 0x3C },
                                                                 { 0x28, 0x12, 0x56, 0xE8, 0x5C, 0x21, 0x01, 0xEC } };
   int16_t           m_iSensorTemperature[SENSORCOUNT] = {DEVICE_DISCONNECTED_RAW,DEVICE_DISCONNECTED_RAW};
 
