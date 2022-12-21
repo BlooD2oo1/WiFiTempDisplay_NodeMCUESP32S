@@ -41,12 +41,15 @@ void GetDisplayTime( tm* pTime )
 }
 
 SemaphoreHandle_t g_Temp_sem;
-unsigned long g_pTempSum[] = {0};
-unsigned long g_iTempCount = 0;
-void AddTemp( unsigned long* pTemp )
+long g_pTempSum[] = {0};
+long g_iTempCount = 0;
+void AddTemp( long* pTemp )
 {
   xSemaphoreTake( g_Temp_sem, portMAX_DELAY );
-  if ( g_iTempCount >= 2048 )
+  if ( g_iTempCount >= 65535 )
+  // 256Cfok = 128*256 = 32768 long-kent.
+  // arduino long max 2147483647 / 32768 = 65535.9999
+  // vagyis ha vegig 256 fok van meg akkor is tudunk 65ezer mintat osszegezni
   {
     for ( byte iSensorInd = 0; iSensorInd < SENSORCOUNT; iSensorInd++ )
     {
@@ -64,7 +67,7 @@ void AddTemp( unsigned long* pTemp )
   }
   xSemaphoreGive( g_Temp_sem );
 }
-void GetTempAndReset( unsigned long* pTempSum, unsigned long& iTempCount )
+void GetTempAndReset( long* pTempSum, long& iTempCount )
 {
   xSemaphoreTake( g_Temp_sem, portMAX_DELAY );
   for ( byte iSensorInd = 0; iSensorInd < SENSORCOUNT; iSensorInd++ )

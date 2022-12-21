@@ -117,8 +117,8 @@ void CWiFiTask::UpdateIOT()
   {
     m_iIOTLastUpdateTimeStamp = millis();
 
-    unsigned long pTempSum[SENSORCOUNT];
-    unsigned long iTempCount;
+    long pTempSum[SENSORCOUNT];
+    long iTempCount;
     GetTempAndReset( pTempSum, iTempCount );
 
     float fA = ( (float)pTempSum[0]/(float)iTempCount ) * 0.0078125f;

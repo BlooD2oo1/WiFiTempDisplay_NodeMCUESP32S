@@ -2,7 +2,7 @@
 #define GLOBALS_H
 
 #include <Arduino.h>
-#include <Time.h>
+#include <time.h>
 
 #define NOINIT RTC_NOINIT_ATTR
 
@@ -23,10 +23,10 @@ void SetDisplayTime( const tm* pTime );
 void GetDisplayTime( tm* pTime );
 
 extern SemaphoreHandle_t g_Temp_sem;
-extern unsigned long g_pTempSum[SENSORCOUNT];
-extern unsigned long g_iTempCount;
-void AddTemp( unsigned long* pTemp );
-void GetTempAndReset( unsigned long* pTempSum, unsigned long& iTempCount );
+extern long g_pTempSum[SENSORCOUNT];
+extern long g_iTempCount;
+void AddTemp( long* pTemp );
+void GetTempAndReset( long* pTempSum, long& iTempCount );
 
 #undef abs
 

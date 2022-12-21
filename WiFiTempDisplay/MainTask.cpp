@@ -285,17 +285,19 @@ void CMainTask::UpdateSensors()
     return;
   }
 
-  unsigned long pTemp[SENSORCOUNT];
-  for ( byte iSensorInd = 0; iSensorInd < SENSORCOUNT; iSensorInd++ )
   {
-    m_iSensorTemperature[iSensorInd] = m_Sensors.getTemp(m_piSensorDeviceAddress[iSensorInd]);
-    pTemp[iSensorInd] = m_iSensorTemperature[iSensorInd];
+    long pTemp[SENSORCOUNT];
+    for ( byte iSensorInd = 0; iSensorInd < SENSORCOUNT; iSensorInd++ )
+    {
+      m_iSensorTemperature[iSensorInd] = m_Sensors.getTemp(m_piSensorDeviceAddress[iSensorInd]);
+      pTemp[iSensorInd] = m_iSensorTemperature[iSensorInd];
+    }
+    m_Sensors.requestTemperatures();
+    m_iSensorLastUpdateTimeMs = millis();
+    
+    AddTemp( pTemp );
   }
-  m_Sensors.requestTemperatures();
-  m_iSensorLastUpdateTimeMs = millis();
   
-  AddTemp( pTemp );
-
   if ( m_iTempDataCurrCounter >= m_iTempDataCurrCount )
   {
     m_iTempDataCurrCounter = 0;

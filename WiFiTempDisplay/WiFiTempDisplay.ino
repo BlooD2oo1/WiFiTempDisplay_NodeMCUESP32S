@@ -15,6 +15,14 @@ void setup()
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, LOW);
 
+  for ( byte i = 0; i < 8; i++ )
+  {
+    digitalWrite(LED_BUILTIN, HIGH);
+    delay( 20 );
+    digitalWrite(LED_BUILTIN, LOW);
+    delay( 20 );
+  }
+
   InitSemaphores();
   
   esp_reset_reason_t iResetReason = esp_reset_reason();

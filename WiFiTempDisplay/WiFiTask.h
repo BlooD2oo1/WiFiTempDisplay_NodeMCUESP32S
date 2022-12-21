@@ -30,6 +30,7 @@ private:
   static const byte   m_sWifiAccCount = 4;
   const char*         m_sWifiID[m_sWifiAccCount] =	 { "BlooD2oo1", "Vodafone-AC86", "BlooD2oo2",  "Neocore Publeak" };
   const char*         m_sWifiPass[m_sWifiAccCount] = { "kakamatyi", "kzpr5j2hCxab",  "Kakamatyi1", "feudum007" };
+  
   const unsigned long m_iThingSpeakChannelNumber = 1685795;
   const char*         m_sThingSpeakWriteAPIKey = "PPAVQ6Z3DYDVFYC8";
 
