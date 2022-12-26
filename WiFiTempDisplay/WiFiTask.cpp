@@ -153,11 +153,13 @@ void CWiFiTask::UpdateIOT()
         Serial.println(iRet);
       }
     }
-
+    
     //noybi update
     {
       Serial.println( "Updating Noybi" );
-  
+
+#ifdef DEVICE_KORNYE_KAZAN
+
       {
         char cNoybi[80] = "http://home.noybi.hu/public/dev/arduinotemp/put.php?valami=59&akarmi=";
         sprintf(&cNoybi[69], "%.2f", fA);
@@ -177,6 +179,24 @@ void CWiFiTask::UpdateIOT()
         http.GET();
         http.end();   //Close connection
       }
+
+#endif
+#ifdef DEVICE_TUZOLTO
+
+      Serial.println( "Updating Noybi" );
+  
+      {
+        float fAB = ( fA + fB ) * 0.5f;
+        char cNoybi[80] = "http://home.noybi.hu/public/dev/arduinotemp/put.php?valami=53&akarmi=";
+        sprintf(&cNoybi[69], "%.2f", fAB);
+
+        HTTPClient http;  //Declare an object of class HTTPClient
+        http.begin( client, cNoybi );
+        http.GET();
+        http.end();   //Close connection
+      }
+
+#endif  
 
       Serial.println( "Updating Noybi done." );
     }

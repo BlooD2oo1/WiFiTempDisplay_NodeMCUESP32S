@@ -70,7 +70,12 @@ void CMainTask::Render()
   GetDisplayTime( &sTimeInfo );
 
   bool bTurnOnDisplay = false;
+#ifdef DEVICE_KORNYE_KAZAN
   if ( sTimeInfo.tm_hour > 5 && sTimeInfo.tm_hour < 18 )
+#endif
+#ifdef DEVICE_TUZOLTO
+  if ( sTimeInfo.tm_hour > 8 && sTimeInfo.tm_hour < 23 )
+#endif   
   {
     bTurnOnDisplay = true;
   }
@@ -142,11 +147,11 @@ void CMainTask::Render()
   u8g2_uint_t iTextWidth = m_u8g2.getStrWidth( pText );
   m_u8g2.drawStr( 128 - iTextWidth, 5+iYOffsetMsg, pText );  
 
-  if ( sTimeInfo.tm_hour > 10 && sTimeInfo.tm_hour < 14 )
+  /*if ( sTimeInfo.tm_hour > 10 && sTimeInfo.tm_hour < 14 )
   {
     m_u8g2.setContrast( 255 );
   }
-  else
+  else*/
   {
     m_u8g2.setContrast( 0 );
   }
@@ -350,11 +355,13 @@ void printAddress(DeviceAddress deviceAddress)
 {
   for (uint8_t i = 0; i < 8; i++)
   {
+    Serial.print( "0x" );
     if (deviceAddress[i] < 16)
     {
       Serial.print("0");
     }
     Serial.print(deviceAddress[i], HEX);
+    Serial.print( ", " );
   }
 }
 void CMainTask::PrintSensorDeviceAddresses()
