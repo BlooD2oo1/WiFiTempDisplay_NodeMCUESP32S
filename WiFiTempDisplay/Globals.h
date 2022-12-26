@@ -1,6 +1,9 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
+//#define DEVICE_KORNYE_KAZAN
+#define DEVICE_TUZOLTO
+
 #include <Arduino.h>
 #include <time.h>
 

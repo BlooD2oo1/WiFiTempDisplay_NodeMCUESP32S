@@ -31,8 +31,14 @@ private:
   const char*         m_sWifiID[m_sWifiAccCount] =	 { "BlooD2oo1", "Vodafone-AC86", "BlooD2oo2",  "Neocore Publeak" };
   const char*         m_sWifiPass[m_sWifiAccCount] = { "kakamatyi", "kzpr5j2hCxab",  "Kakamatyi1", "feudum007" };
   
+#ifdef DEVICE_KORNYE_KAZAN
   const unsigned long m_iThingSpeakChannelNumber = 1685795;
   const char*         m_sThingSpeakWriteAPIKey = "PPAVQ6Z3DYDVFYC8";
+#endif
+#ifdef DEVICE_TUZOLTO
+  const unsigned long m_iThingSpeakChannelNumber = 1990916;
+  const char*         m_sThingSpeakWriteAPIKey = "Z9QQU95IHM3KVRWP";
+#endif
 
   WiFiClient          client;
   WiFiUDP             ntpUDP;
