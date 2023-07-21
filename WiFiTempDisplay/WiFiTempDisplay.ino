@@ -13,13 +13,13 @@ void setup()
   Serial.println( "\n\nSetup begin" );
 
   pinMode(LED_BUILTIN, OUTPUT);
-  digitalWrite(LED_BUILTIN, LOW);
+  SetBuiltInLED( true );
 
   for ( byte i = 0; i < 8; i++ )
   {
-    digitalWrite(LED_BUILTIN, HIGH);
+    SetBuiltInLED( false );
     delay( 20 );
-    digitalWrite(LED_BUILTIN, LOW);
+    SetBuiltInLED( true );
     delay( 20 );
   }
 

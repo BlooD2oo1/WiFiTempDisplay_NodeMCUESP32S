@@ -60,11 +60,65 @@ void CMainTask::Loop()
   //UpdateTouchSensors();
 
   UpdateSensors();
-
-  Render();
+#ifdef HOLOGRAM
+  RenderBasic();
+#else
+  RenderDefault();
+#endif
 }
 
-void CMainTask::Render()
+void CMainTask::RenderBasic()
+{
+  bool bTurnOnDisplay = true;
+  
+  /*//if( (millis()%300) < 50 )
+  if ( (iC%4) == 0 )
+  {
+    bTurnOnDisplay = true;
+  }*/
+
+  if ( m_bDisplayOn != bTurnOnDisplay )
+  {
+      m_bDisplayOn = bTurnOnDisplay;
+      m_u8g2.setPowerSave( m_bDisplayOn ? 0 : 1 );
+  }
+  if ( m_bDisplayOn == false )
+  {
+    return;
+  }
+ 
+  m_u8g2.clearBuffer();
+
+  m_u8g2.sendF("c", 0xa6 );
+
+  static int iC = 0;
+  iC++;
+  if( iC == 65000 ) iC = 0;
+  if ( (iC%3) == 0 )
+  {
+    static char pText[80] = {0};
+
+    {
+        m_u8g2.setFont( u8g2_font_blipfest_07_tr );
+        sprintf( pText, "%.2f", m_Sensors.rawToCelsius( m_iSensorTemperature[0] ) );  
+        m_u8g2.drawStr( 20, 20, pText);
+
+        sprintf( pText, "%.2f", m_Sensors.rawToCelsius( m_iSensorTemperature[1] ) );  
+        m_u8g2.drawStr( 50, 20, pText);
+    }
+
+    /*{
+        static tm sTimeInfo;
+        GetDisplayTime( &sTimeInfo );
+        strftime( pText, 80, "%b %d %H:%M:%S", &sTimeInfo );
+        u8g2_uint_t iTextWidth = m_u8g2.getStrWidth( pText );
+        m_u8g2.drawStr( 128 - iTextWidth, 5, pText );  
+    }*/
+  }
+  m_u8g2.sendBuffer();
+}
+
+void CMainTask::RenderDefault()
 {
   static tm sTimeInfo;
   GetDisplayTime( &sTimeInfo );
@@ -75,7 +129,7 @@ void CMainTask::Render()
 #endif
 #ifdef DEVICE_TUZOLTO
   if ( sTimeInfo.tm_hour > 8 && sTimeInfo.tm_hour < 23 )
-#endif   
+#endif
   {
     bTurnOnDisplay = true;
   }

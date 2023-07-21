@@ -17,7 +17,8 @@ public:
   void    Loop();
 
 private:
-  void    Render();
+  void    RenderDefault();
+  void    RenderBasic();
   void    UpdateSensors();
   void    UpdateTouchSensors();
 

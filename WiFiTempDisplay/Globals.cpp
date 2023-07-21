@@ -80,6 +80,15 @@ void GetTempAndReset( long* pTempSum, long& iTempCount )
   xSemaphoreGive( g_Temp_sem );
 }
 
+void SetBuiltInLED( bool bOn )
+{
+#ifndef HOLOGRAM
+  digitalWrite(LED_BUILTIN, bOn ? HIGH : LOW );
+#else
+  digitalWrite(LED_BUILTIN, LOW );
+#endif
+}
+
 float lerp( float a, float b, float x )
 { 
   return a + x * (b - a);

@@ -1,8 +1,11 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
+//#define HOLOGRAM
+
 //#define DEVICE_KORNYE_KAZAN
 #define DEVICE_TUZOLTO
+
 
 #include <Arduino.h>
 #include <time.h>
@@ -30,6 +33,8 @@ extern long g_pTempSum[SENSORCOUNT];
 extern long g_iTempCount;
 void AddTemp( long* pTemp );
 void GetTempAndReset( long* pTempSum, long& iTempCount );
+
+void SetBuiltInLED( bool bOn );
 
 #undef abs
 

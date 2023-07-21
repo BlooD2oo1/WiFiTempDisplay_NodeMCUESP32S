@@ -43,7 +43,7 @@ void CWiFiTask::Loop()
 
   if ( WiFi.status() != WL_CONNECTED )
   {
-    digitalWrite(LED_BUILTIN, HIGH);
+    SetBuiltInLED( false );
     ConnectToWiFi();
   }
 
@@ -51,7 +51,7 @@ void CWiFiTask::Loop()
   {
     UpdateIOT();
 
-    digitalWrite(LED_BUILTIN, LOW);
+    SetBuiltInLED( true );
   }
 }
 
@@ -153,7 +153,7 @@ void CWiFiTask::UpdateIOT()
         Serial.println(iRet);
       }
     }
-    
+#ifndef HOLOGRAM
     //noybi update
     {
       Serial.println( "Updating Noybi" );
@@ -200,6 +200,7 @@ void CWiFiTask::UpdateIOT()
 
       Serial.println( "Updating Noybi done." );
     }
+#endif
   }
 }
 
