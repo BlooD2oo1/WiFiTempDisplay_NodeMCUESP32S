@@ -3,12 +3,14 @@
   int32_t    CMainTask::m_pTemp[SENSORCOUNT][m_iTempDataCount];
   int16_t    CMainTask::m_iTempDataPointer;
   int16_t    CMainTask::m_iTempDataCurrCounter;
+  bool       CMainTask::m_bFirstDayOfPowerOn;
 
 CMainTask::CMainTask()
 : m_OneWire(m_iOneWireBus)
 , m_Sensors(&m_OneWire)
 , m_u8g2( U8G2_R2 )
 , m_bDisplayOn( true )
+
 {
   for ( int i = 0; i < m_bTouchSensorCount; i++ )
   {
@@ -38,6 +40,7 @@ void CMainTask::Setup( bool bInitialize )
 
   if ( bInitialize )
   {
+    m_bFirstDayOfPowerOn = true;
     delay( 750 );
     for ( byte iSensorInd = 0; iSensorInd < SENSORCOUNT; iSensorInd++ )
     {
@@ -120,15 +123,20 @@ void CMainTask::RenderBasic()
 
 void CMainTask::RenderDefault()
 {
+  if ( m_bFirstDayOfPowerOn && millis() >= HOURMINSEC_2_MS( 23UL, 0UL, 0UL ) )
+  {
+    m_bFirstDayOfPowerOn = false;
+  }
+
   static tm sTimeInfo;
   GetDisplayTime( &sTimeInfo );
 
   bool bTurnOnDisplay = false;
 #ifdef DEVICE_KORNYE_KAZAN
-  if ( sTimeInfo.tm_hour > 5 && sTimeInfo.tm_hour < 18 )
+  if ( m_bFirstDayOfPowerOn || ( sTimeInfo.tm_hour > 5 && sTimeInfo.tm_hour < 18 ) )
 #endif
 #ifdef DEVICE_TUZOLTO
-  if ( sTimeInfo.tm_hour > 8 && sTimeInfo.tm_hour < 23 )
+  if ( m_bFirstDayOfPowerOn || ( sTimeInfo.tm_hour > 8 && sTimeInfo.tm_hour < 23 ) )
 #endif
   {
     bTurnOnDisplay = true;

@@ -50,8 +50,7 @@ void CWiFiTask::Loop()
   if ( WiFi.status() == WL_CONNECTED )
   {
     UpdateIOT();
-
-    SetBuiltInLED( true );
+    SetBuiltInLED( false );
   }
 }
 

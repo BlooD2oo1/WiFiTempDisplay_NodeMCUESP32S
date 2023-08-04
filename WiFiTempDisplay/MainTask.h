@@ -48,6 +48,7 @@ private:
 
   //RTC_NOINIT_ATTR int m_iCounter = 0;
 
+  NOINIT static bool       m_bFirstDayOfPowerOn;
 
   static const int16_t     m_iTempDataCount = 63;
   NOINIT static int32_t    m_pTemp[SENSORCOUNT][m_iTempDataCount];
