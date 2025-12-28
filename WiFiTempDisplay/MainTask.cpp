@@ -132,7 +132,7 @@ void CMainTask::RenderDefault()
   GetDisplayTime( &sTimeInfo );
 
   bool bTurnOnDisplay = false;
-#ifdef DEVICE_KORNYE_KAZAN
+#ifdef DEVICE_KORNYE_UZEM
   if ( m_bFirstDayOfPowerOn || ( sTimeInfo.tm_hour > 5 && sTimeInfo.tm_hour < 18 ) )
 #endif
 #ifdef DEVICE_TUZOLTO

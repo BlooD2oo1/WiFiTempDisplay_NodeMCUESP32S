@@ -2,7 +2,9 @@
 
 #include <SPI.h>
 #include <Wire.h>
+#ifdef THINGSPEAK_ENABLED
 #include <ThingSpeak.h> // always include thingspeak header file after other header files and custom macros
+#endif
 
 CWiFiTask::CWiFiTask()
 : client()
@@ -28,7 +30,9 @@ void CWiFiTask::Setup()
 
   WiFi.mode(WIFI_STA);
 
+#ifdef THINGSPEAK_ENABLED
   ThingSpeak.begin(client);  //Initialize ThingSpeak
+#endif
 
   timeClient.setTimeOffset(7200);
 
@@ -133,6 +137,7 @@ void CWiFiTask::UpdateIOT()
     SetDisplayText( "Updating IOT" );
 
     // thingspeak update
+#ifdef THINGSPEAK_ENABLED
     {
       Serial.println( "Updating ThingSpeak" );      
 
@@ -152,15 +157,16 @@ void CWiFiTask::UpdateIOT()
         Serial.println(iRet);
       }
     }
+#endif
 #ifndef HOLOGRAM
     //noybi update
     {
       Serial.println( "Updating Noybi" );
 
-#ifdef DEVICE_KORNYE_KAZAN
+#ifdef DEVICE_KORNYE_UZEM
 
       {
-        char cNoybi[80] = "http://home.noybi.hu/public/dev/arduinotemp/put.php?valami=59&akarmi=";
+        char cNoybi[80] = "http://home.noybi.hu/public/dev/arduinotemp/put.php?valami=57&akarmi=";
         sprintf(&cNoybi[69], "%.2f", fA);
 
         HTTPClient http;  //Declare an object of class HTTPClient
@@ -170,7 +176,7 @@ void CWiFiTask::UpdateIOT()
       }
       
       {
-        char cNoybi[80] = "http://home.noybi.hu/public/dev/arduinotemp/put.php?valami=60&akarmi=";
+        char cNoybi[80] = "http://home.noybi.hu/public/dev/arduinotemp/put.php?valami=58&akarmi=";
         sprintf(&cNoybi[69], "%.2f", fB);
 
         HTTPClient http;  //Declare an object of class HTTPClient

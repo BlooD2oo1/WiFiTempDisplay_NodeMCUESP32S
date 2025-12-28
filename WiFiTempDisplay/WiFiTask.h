@@ -31,9 +31,11 @@ private:
   const char*         m_sWifiID[m_sWifiAccCount] =	 { "BlooD2oo1", "Vodafone-AC86", "BlooD2oo2",  "Neocore Publeak" };
   const char*         m_sWifiPass[m_sWifiAccCount] = { "kakamatyi", "kzpr5j2hCxab",  "Kakamatyi1", "feudum007" };
   
-#ifdef DEVICE_KORNYE_KAZAN
-  const unsigned long m_iThingSpeakChannelNumber = 1685795;
-  const char*         m_sThingSpeakWriteAPIKey = "PPAVQ6Z3DYDVFYC8";
+#ifdef DEVICE_KORNYE_UZEM
+  //const unsigned long m_iThingSpeakChannelNumber = 1685795;//kazan
+  //const char*         m_sThingSpeakWriteAPIKey = "PPAVQ6Z3DYDVFYC8";//kazan
+  const unsigned long m_iThingSpeakChannelNumber = 1668078;//muhely
+  const char*         m_sThingSpeakWriteAPIKey = "39URU9ON2H6KX2IX";//muhely
 #endif
 #ifdef DEVICE_TUZOLTO
   const unsigned long m_iThingSpeakChannelNumber = 1990916;

@@ -3,8 +3,9 @@
 
 //#define HOLOGRAM
 
-//#define DEVICE_KORNYE_KAZAN
-#define DEVICE_TUZOLTO
+#define DEVICE_KORNYE_UZEM
+//#define DEVICE_TUZOLTO
+#define THINGSPEAK_ENABLED
 
 
 #include <Arduino.h>
