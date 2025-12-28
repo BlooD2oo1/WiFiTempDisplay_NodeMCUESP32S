@@ -25,7 +25,7 @@ void CWiFiTask::Setup()
 {
   Serial.print("WiFiTask setup on core ");
   Serial.println(xPortGetCoreID());
-  
+
   WiFi.mode(WIFI_STA);
 
   ThingSpeak.begin(client);  //Initialize ThingSpeak

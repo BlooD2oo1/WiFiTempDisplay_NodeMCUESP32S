@@ -38,8 +38,6 @@ void SetBuiltInLED( bool bOn );
 
 #undef abs
 
-float lerp( float a, float b, float x );
-
 float absi( int16_t a );
 float absf( float a );
 

@@ -33,7 +33,16 @@ void setup()
   TaskHandle_t hTaskWiFi;
   xTaskCreatePinnedToCore(WiFiTask,"WiFi",10000,NULL,1,&hTaskWiFi,0);  
 
-  Serial.println( "Setup finished\n" );
+  esp_task_wdt_config_t wdt_config = {
+    .timeout_ms = 5000,            // 5 masodperc
+    .idle_core_mask = (1 << 0),    // core0 idle task ( wifi taskot nem figyeljuk )
+    .trigger_panic = true          // reset watchdognal
+  };
+
+  esp_task_wdt_init(&wdt_config);
+  esp_task_wdt_add(NULL);       // loopTask hozzaadasa
+
+  Serial.println( "Setup finished\n" );  
 }
 
 void loop()

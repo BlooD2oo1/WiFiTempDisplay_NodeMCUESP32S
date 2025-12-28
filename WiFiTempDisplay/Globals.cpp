@@ -89,11 +89,6 @@ void SetBuiltInLED( bool bOn )
 #endif
 }
 
-float lerp( float a, float b, float x )
-{ 
-  return a + x * (b - a);
-}
-
 float absi( int16_t a )
 {
   if ( a < 0 )
