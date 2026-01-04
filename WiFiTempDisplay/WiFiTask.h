@@ -32,12 +32,18 @@ private:
   const char*         m_sWifiPass[m_sWifiAccCount] = { "kakamatyi", "kzpr5j2hCxab",  "Kakamatyi1", "feudum007" };
   
 #ifdef DEVICE_KORNYE_UZEM
+  //uint8_t m_pMAC[6] = {0x02,0x11,0x22,0x33,0x44,0x01};
+  //const char*         m_sESPWiFiHostName = "KornyeKazan";//kazan
   //const unsigned long m_iThingSpeakChannelNumber = 1685795;//kazan
   //const char*         m_sThingSpeakWriteAPIKey = "PPAVQ6Z3DYDVFYC8";//kazan
+  uint8_t m_pMAC[6] = {0x02,0x11,0x22,0x33,0x44,0x02};
+  const char*         m_sESPWiFiHostName = "KornyeMuhely";//muhely
   const unsigned long m_iThingSpeakChannelNumber = 1668078;//muhely
   const char*         m_sThingSpeakWriteAPIKey = "39URU9ON2H6KX2IX";//muhely
 #endif
 #ifdef DEVICE_TUZOLTO
+  uint8_t m_pMAC[6] = {0x02,0x11,0x22,0x33,0x44,0x03};
+  const char*         m_sESPWiFiHostName = "Tuzolto";
   const unsigned long m_iThingSpeakChannelNumber = 1990916;
   const char*         m_sThingSpeakWriteAPIKey = "Z9QQU95IHM3KVRWP";
 #endif

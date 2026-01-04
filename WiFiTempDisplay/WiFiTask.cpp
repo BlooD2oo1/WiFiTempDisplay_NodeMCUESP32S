@@ -1,5 +1,6 @@
 #include "WiFiTask.h"
 
+#include <esp_wifi.h>
 #include <SPI.h>
 #include <Wire.h>
 #ifdef THINGSPEAK_ENABLED
@@ -30,6 +31,12 @@ void CWiFiTask::Setup()
 
   WiFi.mode(WIFI_STA);
 
+  //esp_wifi_set_mac(WIFI_IF_STA, m_pMAC);
+
+  WiFi.setHostname(m_sESPWiFiHostName);
+
+  WiFi.setSleep(false);
+
 #ifdef THINGSPEAK_ENABLED
   ThingSpeak.begin(client);  //Initialize ThingSpeak
 #endif
@@ -45,10 +52,21 @@ void CWiFiTask::Loop()
   UpdateDisplayText();
   UpdateTime();
 
-  if ( WiFi.status() != WL_CONNECTED )
+  /*if ( WiFi.status() != WL_CONNECTED )
   {
     SetBuiltInLED( false );
     ConnectToWiFi();
+  }*/
+  
+  //chatgpt: min 10-30 sec cooldown
+  static uint32_t lastWifiTry = 0;
+  if (WiFi.status() != WL_CONNECTED)
+  {
+    if (millis() - lastWifiTry > HOURMINSEC_2_MS( 0UL, 0UL, 20UL ))
+    {
+      lastWifiTry = millis();
+      ConnectToWiFi();
+    }
   }
 
   if ( WiFi.status() == WL_CONNECTED )
@@ -266,6 +284,8 @@ void CWiFiTask::ConnectToWiFi()
     //strcpy( &(p[15]), m_sWifiID[m_iSSIDInd] );
     SetDisplayText( p );
     
+    WiFi.disconnect(true);
+    delay(100);
     WiFi.begin(m_sWifiID[m_iSSIDInd], m_sWifiPass[m_iSSIDInd]); // Connect to WPA/WPA2 network. Change this line if using open or WEP network      
 
     for ( byte i = 0; i < 4; i++ )
