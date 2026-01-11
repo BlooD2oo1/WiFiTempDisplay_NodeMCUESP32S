@@ -43,7 +43,9 @@ void CWiFiTask::Setup()
 
   timeClient.setTimeOffset(7200);
 
-  FindSSID();
+  // ezt nem hasznaljuk, mer gyanus hogy ha lefut, ledobja kornyen az uj routerrel a masik esp32-ot.
+  // emiatt a connectowifi is at lett alakitva
+  //FindSSID();
 
 }
 
@@ -267,12 +269,15 @@ void CWiFiTask::FindSSID()
 
 void CWiFiTask::ConnectToWiFi()
 {
-  if ( m_iSSIDInd == -1 )
+  /*if ( m_iSSIDInd == -1 )
   {
     Serial.println( "WiFi SSID not found." );
     SetDisplayText( "WiFi SSID not found." );
     return;
-  }
+  }*/
+
+  m_iSSIDInd++;
+  m_iSSIDInd %= m_sWifiAccCount;
 
   // Connect or reconnect to WiFi
   if(WiFi.status() != WL_CONNECTED)
